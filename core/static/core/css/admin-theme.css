@@ -1,0 +1,135 @@
+:root {
+  --uh-navy-900: #0f1b2e;
+  --uh-navy-700: #1a3a55;
+  --uh-blue-500: #3b82f6;
+  --uh-blue-400: #60a5fa;
+  --uh-ink: #0f1729;
+  --uh-surface: #f0f4f9;
+  --uh-border: #d0dce9;
+}
+
+body {
+  background: linear-gradient(180deg, #f0f4f9 0%, #e8f0f8 100%);
+  color: var(--uh-ink);
+}
+
+#header {
+  background: linear-gradient(118deg, #08182b 0%, #0c2339 50%, #16324f 100%);
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+#site-name a {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+#site-name .brand-dot {
+  color: var(--uh-blue-500);
+}
+
+#user-tools,
+#user-tools a {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+#user-tools a:hover,
+#user-tools a:focus {
+  color: #fff;
+}
+
+.module,
+.inline-group,
+.dashboard .module table,
+#changelist-form .results,
+.submit-row,
+.breadcrumbs {
+  border-color: var(--uh-border);
+  border-radius: 10px;
+}
+
+.dashboard .module,
+.change-form .module,
+.change-list .module,
+.login #content-main,
+#changelist {
+  background: #fff;
+  border: 1px solid var(--uh-border);
+  border-radius: 14px;
+}
+
+div.breadcrumbs {
+  background: linear-gradient(120deg, #eef4fb 0%, #e8f0f8 100%);
+  color: #2f4f6f;
+}
+
+a:link,
+a:visited {
+  color: #2563eb;
+}
+
+a:hover,
+a:focus {
+  color: #1e40af;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  background: linear-gradient(120deg, var(--uh-blue-500), var(--uh-blue-400));
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: linear-gradient(120deg, var(--uh-blue-500), var(--uh-blue-400));
+}
+
+.button:hover,
+.button:focus,
+input[type="submit"]:hover,
+input[type="submit"]:focus,
+input[type="button"]:hover,
+input[type="button"]:focus,
+a.button:hover,
+a.button:focus {
+  filter: brightness(0.98);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+textarea,
+select,
+.vTextField {
+  border: 1px solid #c7d7e6;
+  border-radius: 8px;
+  background: #f9fcff;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #7aa4cb;
+  box-shadow: 0 0 0 3px rgba(62, 118, 170, 0.12);
+}
+
+#changelist-filter h2 {
+  background: var(--uh-navy-700);
+  color: #fff;
+}
+
+#changelist-filter {
+  border-left: 1px solid var(--uh-border);
+}

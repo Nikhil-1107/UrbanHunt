@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Urban Hunt Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'core/css/admin-theme.css' %}" />
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">UrbanHunt<span class="brand-dot">.</span> Admin</a>
+  </h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

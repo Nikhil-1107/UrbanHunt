@@ -1,0 +1,47 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Pending Approval{% endblock %}
+{% block breadcrumb %}<span class="breadcrumb-sep">/</span><span>Pending Approval</span>{% endblock %}
+
+{% block content %}
+<section class="pending-page-heading">
+  <div><span class="section-kicker">PROPERTY REVIEW</span><h1 class="page-title">Pending Approval</h1><p class="page-subtitle">Review property listings awaiting verification before they become visible as approved listings.</p></div>
+  <div class="pending-count"><strong>{{ pending_count }}</strong><span>Pending</span></div>
+</section>
+
+<section class="pending-card">
+  <div class="pending-card-header">
+    <div class="pending-card-title-wrap"><span class="pending-card-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 5h-2v6l5 3 .9-1.5-3.9-2.3V7z"/></svg></span><div><h2>Properties Awaiting Review</h2><p>Review submitted property information and documentation before approving a listing.</p></div></div>
+    <div class="pending-summary"><span>Awaiting Review <strong>{{ pending_count }}</strong></span><span>Documents Available <strong>{{ documents_count }}</strong></span></div>
+  </div>
+  <form class="pending-filter-form" method="get">
+    <label class="pending-search"><svg viewBox="0 0 24 24"><path d="M9.5 3a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM14 13l6.5 6.5-1.4 1.4-6.5-6.5z"/></svg><input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search property, seller or location..." aria-label="Search pending properties"></label>
+    <select name="type" aria-label="Filter by property type"><option value="">All Types</option>{% for value,label in property_types %}<option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <select name="documents" aria-label="Filter by document status"><option value="">All Documents</option><option value="available" {% if request.GET.documents == 'available' %}selected{% endif %}>Available</option><option value="missing" {% if request.GET.documents == 'missing' %}selected{% endif %}>Missing</option></select>
+    <button type="submit" class="pending-filter-button"><svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h10v2H7v-2zm3 6h4v2h-4v-2z"/></svg>Filter</button>
+    {% if request.GET.q or request.GET.type or request.GET.documents %}<a href="{% url 'core:admin_properties_pending' %}" class="pending-clear-button">Clear</a>{% endif %}
+  </form>
+  <div class="pending-table-wrap"><table class="pending-table"><thead><tr><th>PROPERTY</th><th>SELLER</th><th>TYPE</th><th>PRICE (₹)</th><th>LOCATION</th><th>DOCUMENTS</th><th>LISTED</th><th>ACTIONS</th></tr></thead><tbody>
+    {% for p in properties %}
+    <tr id="pending-row-{{ p.id }}">
+      <td><div class="pending-property"><span class="pending-thumb">{% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.title }}">{% else %}<svg viewBox="0 0 24 24"><path d="M3 20V9l9-7 9 7v11h-6v-6H9v6H3z"/></svg>{% endif %}</span><strong title="{{ p.title }}">{{ p.title }}</strong></div></td>
+      <td><div class="pending-seller">{% if p.seller.avatar %}<img src="{{ p.seller.avatar.url }}" alt="{{ p.seller.username }}">{% endif %}<span>{{ p.seller.username }}</span></div></td>
+      <td><span class="pending-type">{{ p.get_property_type_display|upper }}</span></td><td class="pending-price">₹{{ p.price }}</td>
+      <td class="pending-location"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg><span title="{{ p.location }}">{{ p.location }}</span></td>
+      <td>{% if p.documents %}<span class="pending-document pending-document--available"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM8 13h8v2H8zm0 4h8v2H8z"/></svg>Available</span><a class="pending-open-link" href="{{ p.documents.url }}" target="_blank" rel="noopener">Open</a>{% else %}<span class="pending-document pending-document--missing">Missing</span>{% endif %}</td>
+      <td class="pending-date">{{ p.created_at|date:"d M Y" }}</td>
+      <td><div class="pending-actions"><a href="{% url 'core:admin_property_detail' p.pk %}" class="pending-action pending-action--review" title="Review property"><svg viewBox="0 0 24 24"><path d="M12 5c-5 0-9 3.5-10 7 1 3.5 5 7 10 7s9-3.5 10-7c-1-3.5-5-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>Review</a><button type="button" class="pending-action pending-action--approve pending-approve-button" data-url="{% url 'core:admin_property_approve' p.pk %}" data-row="pending-row-{{ p.id }}"><svg viewBox="0 0 24 24"><path d="m9 16.2-3.5-3.5L4.1 14l4.9 4.9L20 7.9l-1.4-1.4z"/></svg>Approve</button></div></td>
+    </tr>
+    {% empty %}<tr><td colspan="8"><div class="pending-empty"><span><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-2h2zm0-4h-2V7h2z"/></svg></span><strong>All Caught Up</strong><p>There are currently no property listings waiting for verification.</p><small>New submissions will appear here when sellers submit properties for review.</small></div></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script>
+const pendingCsrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+document.querySelectorAll('.pending-approve-button').forEach((button) => button.addEventListener('click', async () => {
+  button.disabled = true;
+  try { const response = await fetch(button.dataset.url, {method:'POST', headers:{'X-CSRFToken':pendingCsrf,'X-Requested-With':'XMLHttpRequest'}}); const data = await response.json(); if (!data.success) throw new Error(data.message || 'Approval failed.'); window.location.reload(); }
+  catch (error) { button.disabled = false; window.alert(error.message); }
+}));
+</script>{% endblock %}

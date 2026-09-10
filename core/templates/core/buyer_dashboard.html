@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Buyer Dashboard | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="dashboard-header-banner">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <span class="eyebrow">BUYER WORKSPACE</span>
+      <h1 class="display-6 fw-bold mb-2">Buyer Dashboard</h1>
+      <p class="text-secondary mb-0">Manage your inquiries, active chats, and bookmarked homes.</p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+      <a href="{% url 'core:property_list' %}" class="btn btn-accent me-2">Browse Properties</a>
+      <a href="{% url 'core:saved_properties' %}" class="btn btn-outline-dark">Saved Homes</a>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white border rounded-4 p-4 p-lg-5 mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <span class="eyebrow">CONVERSATIONS</span>
+      <h2 class="h4 mb-0 fw-bold">Sent Inquiries</h2>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="workspace-table align-middle">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Seller</th>
+          <th>Your Inquiry</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inquiry in inquiries %}
+          <tr>
+            <td>
+              <a href="{% url 'core:property_detail' inquiry.property.pk %}" class="fw-bold text-dark">
+                {{ inquiry.property.title }}
+              </a>
+            </td>
+            <td>{{ inquiry.property.seller.username }}</td>
+            <td class="text-secondary">{{ inquiry.message|truncatechars:80 }}</td>
+            <td>
+              <a href="{% url 'core:inquiry_chat_room' inquiry.pk %}" class="btn btn-dark btn-sm position-relative">
+                Open Chat
+                {% if inquiry.unread_count %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ inquiry.unread_count }}
+                  </span>
+                {% endif %}
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center py-4 text-secondary">
+              No inquiries sent yet. Browse properties to contact owners!
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

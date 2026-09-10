@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Urban Hunt | Real Estate Marketplace{% endblock %}</title>
+  <link rel="icon" type="image/png" href="/media/logo/logo.png" />
+  {% load static %}
+  <!-- Bootstrap 5.3 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+  <!-- Google Fonts: Manrope -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
+  <!-- Resideo Design System CSS -->
+  <link rel="stylesheet" href="{% static 'core/css/style.css' %}" />
+</head>
+<body>
+  <!-- HEADER / NAVIGATION -->
+  {% block navbar %}
+  <nav class="navbar navbar-expand-lg premium-navbar">
+    <div class="container-xxl">
+      <!-- Brand Logo & Name -->
+      <a href="{% url 'core:home' %}" class="navbar-brand brand-wordmark me-3">
+        <img src="/media/logo/logo.png" alt="Urban Hunt Logo" class="brand-logo-img" />
+      </a>
+
+      <!-- Mobile Toggler -->
+      <button
+        class="navbar-toggler border-0 shadow-none"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Nav Items -->
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav nav-primary-links mx-lg-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'property_list' %}active{% endif %}" href="{% url 'core:property_list' %}">Properties</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'core:contact' %}">Contact</a>
+          </li>
+        </ul>
+
+        <!-- Right Utilities -->
+        <div class="nav-utility">
+          {% if request.user.is_authenticated %}
+            {% if request.user.role == 'buyer' %}
+              <a href="{% url 'core:saved_properties' %}" class="btn btn-outline-secondary btn-sm py-2" title="Saved Properties">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                <span class="d-none d-xl-inline">Saved</span>
+              </a>
+            {% elif request.user.role == 'seller' %}
+              <a href="{% url 'core:dashboard' %}?tab=listings" class="btn btn-outline-secondary btn-sm py-2" title="List Property">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M5 21V5l7-3 7 3v16"></path><path d="M9 9h6"></path><path d="M12 6v6"></path></svg>
+                <span class="d-none d-xl-inline">List Property</span>
+              </a>
+            {% endif %}
+
+            <!-- Chat Messages Icon (Direct Link to Chat Workspace) -->
+            <a
+              href="{% url 'core:dashboard' %}?tab=chat"
+              class="notification-bell-btn me-1 text-decoration-none"
+              aria-label="Chat messages"
+              title="Messages / Chat Workspace"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              {% if chat_notifications.unread_count %}
+                <span class="notification-count">{{ chat_notifications.unread_count }}</span>
+              {% endif %}
+            </a>
+
+            <!-- User Profile Dropdown -->
+            <div class="dropdown">
+              <button class="profile-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="profile-btn-avatar">
+                  {% if request.user.avatar %}
+                    <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}" />
+                  {% else %}
+                    {{ request.user.username|first|upper }}
+                  {% endif %}
+                </span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end profile-menu">
+                <div class="profile-menu-header">
+                  <span class="profile-menu-header-avatar">
+                    {% if request.user.avatar %}
+                      <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}" />
+                    {% else %}
+                      {{ request.user.username|first|upper }}
+                    {% endif %}
+                  </span>
+                  <div class="profile-menu-header-copy">
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <span>{{ request.user.get_role_display }} Account</span>
+                  </div>
+                </div>
+                <a class="dropdown-item profile-menu-action" href="{% url 'core:profile' %}">
+                  <span class="profile-menu-action-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </span>
+                  My Profile
+                </a>
+                {% if request.user.role == 'seller' %}
+                  <a class="dropdown-item profile-menu-action" href="{% url 'core:dashboard' %}?tab=listings">
+                    <span class="profile-menu-action-icon"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></span>
+                    Manage Properties
+                  </a>
+                  <a class="dropdown-item profile-menu-action" href="{% url 'core:dashboard' %}?tab=chat">
+                    <span class="profile-menu-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                    Buyer Messages
+                  </a>
+                {% elif request.user.role == 'buyer' %}
+                  {% if request.resolver_match.url_name != 'dashboard' %}
+                    <a class="dropdown-item profile-menu-action" href="{% url 'core:dashboard' %}?tab=chat">
+                      <span class="profile-menu-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+                      Messages
+                    </a>
+                  {% endif %}
+                  <a class="dropdown-item profile-menu-action" href="{% url 'core:saved_properties' %}">
+                    <span class="profile-menu-action-icon"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg></span>
+                    Saved Properties
+                  </a>
+                {% endif %}
+                <div class="dropdown-divider my-1"></div>
+                <form method="post" action="{% url 'core:logout' %}" onsubmit="triggerLogoutConfirm(event, this); return false;">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item profile-menu-action profile-menu-action--danger border-0 bg-transparent w-100 text-start">
+                    <span class="profile-menu-action-icon"><svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span>
+                    Logout
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% else %}
+            <!-- Guest Auth Link -->
+            <a href="#" onclick="openLoginModal(event)" class="uh-nav-login-btn">
+              <span>Login</span>
+              <svg class="uh-nav-login-arrow" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+  {% endblock %}
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="site-main">
+    {% for message in messages %}{% endfor %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- PREMIUM WHITE FOOTER -->
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="container-xxl footer-container">
+      <div class="footer-main-grid">
+        <div class="footer-brand-column">
+          <a href="{% url 'core:home' %}" class="footer-wordmark" aria-label="Urban Hunt home">
+            <img src="/media/logo/logo.png" alt="Urban Hunt logo" class="footer-logo" />
+            <span class="brand-text-wrap"><span class="brand-urban">Urban</span><span class="brand-hunt">Hunt</span>
+          </a>
+          <p class="footer-brand-tagline">
+            Discover verified properties, connect with trusted owners, and find a place that feels like home.
+          </p>
+        </div>
+
+        <div class="footer-link-column">
+          <h3>Explore</h3>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'core:home' %}">Home</a></li>
+            <li><a href="{% url 'core:property_list' %}">Properties</a></li>
+            <li><a href="{% url 'core:about' %}">About</a></li>
+            <li><a href="{% url 'core:contact' %}">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-link-column">
+          <h3>Account</h3>
+          <ul class="footer-links-list">
+            {% if request.user.is_authenticated %}
+              <li><a href="{% url 'core:profile' %}">My Profile</a></li>
+              <li><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+              {% if request.user.role == 'buyer' %}
+                <li><a href="{% url 'core:saved_properties' %}">Saved Properties</a></li>
+              {% endif %}
+              <li><a href="{% url 'core:contact' %}">Contact Support</a></li>
+            {% else %}
+              <li><a href="{% url 'core:login' %}">Login</a></li>
+              <li><a href="{% url 'core:register' %}">Create Account</a></li>
+              <li><a href="{% url 'core:contact' %}">Contact Support</a></li>
+              <li><a href="{% url 'core:login' %}">Dashboard</a></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <div class="footer-link-column">
+          <h3>Contact</h3>
+          <div class="footer-contact-list" aria-label="Urban Hunt contact information">
+            <span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.2"/></svg>Ahmedabad, Gujarat, India</span>
+            <a href="mailto:rathodnarendra1107@gmail.com"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m4 7 8 6 8-6"/></svg>rathodnarendra1107@gmail.com</a>
+            <a href="tel:+919099167565"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7.2 3.5 5 4.7a2 2 0 0 0-1 2.3c1.3 6 5 9.7 11 11a2 2 0 0 0 2.3-1l1.2-2.2-3.3-2.3-1.6 1.6a12.4 12.4 0 0 1-4.7-4.7l1.6-1.6-2.3-3.3Z"/></svg>+91 9099167565</a>
+          </div>
+          <ul class="footer-links-list">
+            <li><span>📍 Ahmedabad, Gujarat, India</span></li>
+            <li><span>✉️ rathodnarendra1107@gmail.com</span></li>
+            <li><span>📞 +91 9099167565</span></li>
+            <li><span>🕐 Mon - Sat: 9:00 AM - 7:00 PM</span></li>
+          </ul>
+        </div>
+      </div>
+
+
+
+      <div class="footer-bottom-bar">
+        <div class="footer-copyright">
+          &copy; {% now "Y" %} Urban Hunt Real Estate. All rights reserved.
+        </div>
+        <div class="footer-legal-links">
+          <a href="{% url 'core:privacy_policy' %}">Privacy Policy</a>
+
+        </div>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <!-- JS Scripts -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
+
+  <script>
+    // Toast notification utility
+    function showNotification(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast-notification toast-${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✓' : '✕'}</span>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s reverse forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // Global toggle property save helper
+    async function toggleSaveProperty(btnElement, event, propertyId) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const btn = btnElement || (event && (event.currentTarget || (event.target && event.target.closest('.uh-card-fav-btn'))));
+      if (!btn) return;
+
+      const isCurrentlySaved = btn.classList.contains('saved');
+      if (isCurrentlySaved) {
+        btn.classList.remove('saved');
+      } else {
+        btn.classList.add('saved');
+      }
+
+      const csrfToken = '{{ csrf_token }}';
+
+      try {
+        const response = await fetch(`/properties/${propertyId}/save/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          const isSaved = data.is_saved || data.action === 'saved';
+          if (isSaved) {
+            btn.classList.add('saved');
+            showNotification(data.message || 'Property saved to shortlist!', 'success');
+          } else {
+            btn.classList.remove('saved');
+            showNotification(data.message || 'Property removed from shortlist', 'success');
+          }
+        } else {
+          if (isCurrentlySaved) btn.classList.add('saved');
+          else btn.classList.remove('saved');
+          showNotification(data.message || 'Failed to save property', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        if (isCurrentlySaved) btn.classList.add('saved');
+        else btn.classList.remove('saved');
+        showNotification('An error occurred while saving', 'error');
+      }
+    }
+
+    // Custom Logout Confirmation Modal Helper
+    let pendingLogoutForm = null;
+
+    function triggerLogoutConfirm(event, formElement) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      pendingLogoutForm = formElement || (event && (event.target.closest('form') || event.target));
+      const modal = document.getElementById('uhLogoutModal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('uhLogoutModal');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function confirmLogoutAction() {
+      if (pendingLogoutForm) {
+        pendingLogoutForm.submit();
+      }
+    }
+
+    // Login Modal Functions
+    function openLoginModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const backdrop = document.getElementById('uhLoginModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeLoginModal() {
+      const backdrop = document.getElementById('uhLoginModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Registration Modal Functions
+    function openRegisterModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeLoginModal();
+      const backdrop = document.getElementById('uhRegisterModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeRegisterModal() {
+      const backdrop = document.getElementById('uhRegisterModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    function switchToLoginModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeRegisterModal();
+      openLoginModal(null);
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    // Close login modal on Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeLoginModal();
+        closeRegisterModal();
+      }
+    });
+
+    // Registration Form Handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const registerForm = document.getElementById('uh-register-form');
+      const mobileInput = document.getElementById('uh_register_mobile');
+      const mobileInputInstance = mobileInput ? window.intlTelInput(mobileInput, {
+        initialCountry: 'in',
+        preferredCountries: ['in', 'us', 'gb', 'cn', 'fr'],
+        separateDialCode: true,
+        loadUtils: () => import('https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js')
+      }) : null;
+
+      if (registerForm) {
+        if (mobileInput) {
+          mobileInput.addEventListener('input', function() {
+            mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0, 10);
+          });
+        }
+
+        registerForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Get form values
+          const email = document.getElementById('uh_register_email').value.trim();
+          const mobile = document.getElementById('uh_register_mobile').value.trim();
+          const role = document.getElementById('uh_register_role').value;
+          const password = document.getElementById('uh_register_password').value;
+
+          if (!/^\d{10}$/.test(mobile)) {
+            mobileInput.setCustomValidity('Enter exactly 10 digits.');
+            mobileInput.reportValidity();
+            return;
+          }
+          mobileInput.setCustomValidity('');
+          
+          // Set mobile_no field with country code
+          const selectedCountry = mobileInputInstance.getSelectedCountryData();
+          const internationalMobile = mobileInputInstance.getNumber() || '+' + selectedCountry.dialCode + mobile;
+          document.getElementById('uh_register_mobile_no').value = internationalMobile;
+          
+          // Set username from email (since username field is hidden)
+          const usernameField = document.createElement('input');
+          usernameField.type = 'hidden';
+          usernameField.name = 'username';
+          usernameField.value = email.split('@')[0] + '_' + Date.now().toString().slice(-5);
+          registerForm.appendChild(usernameField);
+          
+          // Submit the form using native form submission
+          registerForm.submit();
+        });
+      }
+    });
+
+    function showRegisterError(elementId, message) {
+      const errorEl = document.getElementById(elementId);
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.add('show');
+        setTimeout(() => {
+          errorEl.classList.remove('show');
+        }, 5000);
+      }
+    }
+  </script>
+
+  <!-- Auto-open modals based on URL parameter -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const modalToOpen = urlParams.get('modal');
+      
+      if (modalToOpen === 'login') {
+        openLoginModal(null);
+      } else if (modalToOpen === 'register') {
+        openRegisterModal(null);
+      }
+    });
+  </script>
+
+  <!-- URBAN HUNT CUSTOM LOGOUT CONFIRMATION MODAL -->
+  <div id="uhLogoutModal" class="uh-logout-modal-backdrop" onclick="if(event.target===this) closeLogoutModal()">
+    <div class="uh-logout-modal-card">
+      <div class="uh-logout-icon-wrapper">
+        <div class="uh-logout-circle-exclamation">!</div>
+      </div>
+      <h3 class="uh-logout-modal-title">Are you leaving?</h3>
+      <p class="uh-logout-modal-desc">Are you sure want to log out? All your unsaved data will be lost.</p>
+      <div class="uh-logout-modal-footer">
+        <button type="button" class="uh-logout-btn-cancel-text" onclick="closeLogoutModal()">Cancel</button>
+        <button type="button" class="uh-logout-btn-yes" onclick="confirmLogoutAction()">
+          <span>Yes</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- URBAN HUNT LOGIN MODAL -->
+  <div id="uhLoginModalBackdrop" class="uh-login-modal-backdrop" onclick="if(event.target===this) closeLoginModal()">
+    <div class="uh-login-modal-card">
+      <!-- Close Button -->
+      <button type="button" class="uh-login-modal-close" onclick="closeLoginModal()">×</button>
+
+      <!-- Two Column Layout -->
+      <div class="uh-login-modal-content">
+        <!-- Left Column: Welcome -->
+        <div class="uh-login-modal-left">
+          <div class="uh-login-welcome">
+            <h2 class="uh-login-heading">Welcome Back</h2>
+            <p class="uh-login-subtext">Sign in to continue to your Urban Hunt account.</p>
+          </div>
+          
+          <!-- Login Image -->
+          <div class="uh-login-image">
+            <img src="/media/logo/login.png" alt="Welcome to Urban Hunt" />
+          </div>
+        </div>
+
+        <!-- Right Column: Login Form -->
+        <div class="uh-login-modal-right">
+          <form method="post" action="{% url 'core:login' %}" class="uh-login-form">
+            {% csrf_token %}
+            {% if next_url %}
+              <input name="next" type="hidden" value="{{ next_url }}" />
+            {% endif %}
+
+            <!-- Messages -->
+            <div id="uh-login-messages" class="uh-login-messages"></div>
+
+            <!-- Account Role -->
+            <div class="uh-login-form-group">
+              <label for="uh_login_role" class="uh-login-label">Account Role</label>
+              <div class="uh-login-select-wrapper">
+                <svg class="uh-login-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <select id="uh_login_role" name="role" class="uh-login-select" required>
+                  <option value="buyer">Buyer Account</option>
+                  <option value="seller">Seller Account</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="uh-login-form-group">
+              <label for="uh_login_email" class="uh-login-label">Email Address</label>
+              <div class="uh-login-input-wrapper">
+                <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                <input id="uh_login_email" name="email" type="email" class="uh-login-input" placeholder="Enter your email address" required />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="uh-login-form-group">
+              <div class="uh-login-label-row">
+                <label for="uh_login_password" class="uh-login-label">Password</label>
+                <a href="#" onclick="openForgotPasswordModal(event)" class="uh-login-forgot-link">Forgot password?</a>
+              </div>
+              <div class="uh-login-input-wrapper">
+                <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="uh_login_password" name="password" type="password" class="uh-login-input" placeholder="Enter your password" required />
+              </div>
+            </div>
+
+            <!-- Sign In Button -->
+            <button type="submit" class="uh-login-btn-primary">Sign In</button>
+
+            <!-- Divider -->
+            <div class="uh-login-divider">
+              <span>or</span>
+            </div>
+
+            <!-- Registration Link -->
+            <p class="uh-login-footer">
+              New to Urban Hunt? <a href="#" onclick="openRegisterModal(event)" class="uh-login-register-link">Create an account</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URBAN HUNT REGISTRATION MODAL -->
+  <div id="uhRegisterModalBackdrop" class="uh-register-modal-backdrop" onclick="if(event.target===this) closeRegisterModal()">
+    <div class="uh-register-modal-card">
+      <!-- Close Button -->
+      <button type="button" class="uh-register-modal-close" onclick="closeRegisterModal()">×</button>
+
+      <!-- Two Column Layout -->
+      <div class="uh-register-modal-content">
+        <!-- Left Column: Welcome -->
+        <div class="uh-register-modal-left">
+          <div class="uh-register-welcome">
+            <span class="uh-register-eyebrow">CREATE ACCOUNT</span>
+            <h2 class="uh-register-heading">Join Urban Hunt</h2>
+            <p class="uh-register-subtext">Create your account and start your property journey today.</p>
+          </div>
+          
+          <!-- Register Image -->
+          <div class="uh-register-image">
+            <img src="/media/logo/login.png" alt="Join Urban Hunt" />
+          </div>
+        </div>
+
+        <!-- Right Column: Registration Form -->
+        <div class="uh-register-modal-right">
+          <form method="post" action="{% url 'core:register' %}" id="uh-register-form" class="uh-register-form">
+            {% csrf_token %}
+            {% if next_url %}
+              <input name="next" type="hidden" value="{{ next_url }}" />
+            {% endif %}
+
+            <!-- Messages -->
+            <div id="uh-register-messages" class="uh-register-messages"></div>
+
+            <!-- Row 1: Account Role -->
+            <div class="uh-register-row">
+              <!-- Account Role -->
+              <div class="uh-register-field">
+                <label for="uh_register_role" class="uh-register-label">Account Role</label>
+                <div class="uh-register-select-wrapper">
+                  <svg class="uh-register-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <select id="uh_register_role" name="role" class="uh-register-select" required>
+                    <option value="buyer">Buyer Account</option>
+                    <option value="seller">Seller Account</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Email -->
+            <div class="uh-register-row">
+              <!-- Email -->
+              <div class="uh-register-field">
+                <label for="uh_register_email" class="uh-register-label">Email Address</label>
+                <div class="uh-register-input-wrapper">
+                  <svg class="uh-register-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
+                  <input id="uh_register_email" name="email" type="email" class="uh-register-input" placeholder="Enter your email address" required />
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3: Mobile Number -->
+            <div class="uh-register-row">
+              <!-- Mobile Number -->
+              <div class="uh-register-field">
+                <label class="uh-register-label">Mobile Number</label>
+                <div class="uh-register-mobile-row">
+                  <input type="hidden" id="uh_register_mobile_no" name="mobile_no" />
+                  <input id="uh_register_mobile" type="tel" class="uh-register-input" placeholder="Enter mobile number" autocomplete="tel" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" required />
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: Password -->
+            <div class="uh-register-row">
+              <!-- Password -->
+              <div class="uh-register-field">
+                <label for="uh_register_password" class="uh-register-label">Password</label>
+                <div class="uh-register-input-wrapper uh-register-password-wrapper">
+                  <svg class="uh-register-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <input id="uh_register_password" name="password1" type="password" class="uh-register-input" placeholder="Create a password" required />
+                  <button type="button" class="uh-register-password-toggle" onclick="togglePasswordVisibility('uh_register_password')">
+                    <svg class="uh-register-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Requirements - REMOVED -->
+
+            <!-- Create Account Button -->
+            <button type="submit" class="uh-register-btn-primary">Create Account →</button>
+
+            <!-- Divider -->
+            <div class="uh-register-divider">
+              <span>or</span>
+            </div>
+
+            <!-- Login Link -->
+            <p class="uh-register-footer">
+              Already have an account? <a href="#" onclick="switchToLoginModal(event)" class="uh-register-login-link">Sign in</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URBAN HUNT FORGOT PASSWORD MODAL -->
+  <div id="uhForgotPasswordModalBackdrop" class="uh-login-modal-backdrop" onclick="if(event.target===this) closeForgotPasswordModal()">
+    <div class="uh-login-modal-card">
+      <!-- Close Button -->
+      <button type="button" class="uh-login-modal-close" onclick="closeForgotPasswordModal()">×</button>
+
+      <!-- Two Column Layout -->
+      <div class="uh-login-modal-content">
+        <!-- Left Column: Welcome -->
+        <div class="uh-login-modal-left">
+          <div class="uh-login-welcome">
+            <h2 class="uh-login-heading">Forgot Password?</h2>
+            <p class="uh-login-subtext">Enter your email to receive a password reset OTP</p>
+          </div>
+          
+          <!-- Login Image -->
+          <div class="uh-login-image">
+            <img src="/media/logo/login.png" alt="Password Recovery" />
+          </div>
+        </div>
+
+        <!-- Right Column: Form -->
+        <div class="uh-login-modal-right">
+          <form method="post" action="{% url 'core:forgot_password' %}" class="uh-login-form" id="uh-forgot-password-form">
+            {% csrf_token %}
+
+            <!-- Messages -->
+            <div id="uh-forgot-password-messages" class="uh-login-messages"></div>
+
+            <!-- Email -->
+            <div class="uh-login-form-group">
+              <label for="uh_forgot_email" class="uh-login-label">Email Address</label>
+              <div class="uh-login-input-wrapper">
+                <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                <input id="uh_forgot_email" name="email" type="email" class="uh-login-input" placeholder="Enter your email address" required />
+              </div>
+            </div>
+
+            <!-- Send OTP Button -->
+            <button type="submit" class="uh-login-btn-primary">Send OTP</button>
+
+            <!-- Divider -->
+            <div class="uh-login-divider">
+              <span>or</span>
+            </div>
+
+            <!-- Login Link -->
+            <p class="uh-login-footer">
+              Remember your password? <a href="#" onclick="switchForgotToLoginModal(event)" class="uh-login-register-link">Sign in</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URBAN HUNT VERIFY OTP MODAL -->
+  <div id="uhVerifyOtpModalBackdrop" class="uh-login-modal-backdrop" onclick="if(event.target===this) closeVerifyOtpModal()">
+    <div class="uh-login-modal-card">
+      <!-- Close Button -->
+      <button type="button" class="uh-login-modal-close" onclick="closeVerifyOtpModal()">×</button>
+
+      <!-- Two Column Layout -->
+      <div class="uh-login-modal-content">
+        <!-- Left Column: Welcome -->
+        <div class="uh-login-modal-left">
+          <div class="uh-login-welcome">
+            <h2 class="uh-login-heading">Verify OTP</h2>
+            <p class="uh-login-subtext" id="uh-verify-otp-subtitle">Enter the 6-digit OTP sent to your email</p>
+          </div>
+          
+          <!-- Login Image -->
+          <div class="uh-login-image">
+            <img src="/media/logo/login.png" alt="Verify OTP" />
+          </div>
+        </div>
+
+        <!-- Right Column: Form -->
+        <div class="uh-login-modal-right">
+          <form method="post" action="{% url 'core:verify_reset_otp' %}" class="uh-login-form" id="uh-verify-otp-form">
+            {% csrf_token %}
+
+            <!-- Messages -->
+            <div id="uh-verify-otp-messages" class="uh-login-messages"></div>
+
+            <!-- OTP -->
+            <div class="uh-login-form-group">
+              <label for="uh_verify_otp_1" class="uh-login-label">One-Time Password (OTP)</label>
+              <div class="uh-otp-inputs" role="group" aria-label="6-digit one-time password">
+                {% for digit in "123456" %}
+                  <input id="uh_verify_otp_{{ forloop.counter }}" class="uh-otp-digit" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" aria-label="OTP digit {{ forloop.counter }}" required />
+                {% endfor %}
+              </div>
+              <input id="uh_verify_otp" name="otp" type="hidden" />
+            </div>
+
+            <!-- Verify Button -->
+            <button type="submit" class="uh-login-btn-primary">Verify OTP</button>
+
+            <!-- Divider -->
+            <div class="uh-login-divider">
+              <span>or</span>
+            </div>
+
+            <!-- Request New OTP Link -->
+            <p class="uh-login-footer">
+              OTP expired? <a href="#" onclick="switchVerifyOtpToForgotPasswordModal(event)" class="uh-login-register-link">Request new OTP</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- URBAN HUNT RESET PASSWORD MODAL -->
+  <div id="uhResetPasswordModalBackdrop" class="uh-login-modal-backdrop" onclick="if(event.target===this) closeResetPasswordModal()">
+    <div class="uh-login-modal-card">
+      <!-- Close Button -->
+      <button type="button" class="uh-login-modal-close" onclick="closeResetPasswordModal()">×</button>
+
+      <!-- Two Column Layout -->
+      <div class="uh-login-modal-content">
+        <!-- Left Column: Welcome -->
+        <div class="uh-login-modal-left">
+          <div class="uh-login-welcome">
+            <h2 class="uh-login-heading">Set New Password</h2>
+            <p class="uh-login-subtext">Create a strong new password for your account</p>
+          </div>
+          
+          <!-- Login Image -->
+          <div class="uh-login-image">
+            <img src="/media/logo/login.png" alt="Reset Password" />
+          </div>
+        </div>
+
+        <!-- Right Column: Form -->
+        <div class="uh-login-modal-right">
+          <form method="post" action="{% url 'core:reset_password' %}" class="uh-login-form" id="uh-reset-password-form">
+            {% csrf_token %}
+
+            <!-- Messages -->
+            <div id="uh-reset-password-messages" class="uh-login-messages"></div>
+
+            <!-- New Password -->
+            <div class="uh-login-form-group">
+              <label for="uh_reset_new_password1" class="uh-login-label">New Password</label>
+              <div class="uh-login-input-wrapper">
+                <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="uh_reset_new_password1" name="new_password1" type="password" class="uh-login-input" placeholder="Create a password" required />
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="uh-login-form-group">
+              <label for="uh_reset_new_password2" class="uh-login-label">Confirm Password</label>
+              <div class="uh-login-input-wrapper">
+                <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input id="uh_reset_new_password2" name="new_password2" type="password" class="uh-login-input" placeholder="Confirm password" required />
+              </div>
+            </div>
+
+            <!-- Update Password Button -->
+            <button type="submit" class="uh-login-btn-primary">Update Password</button>
+
+            <!-- Divider -->
+            <div class="uh-login-divider">
+              <span>or</span>
+            </div>
+
+            <!-- Login Link -->
+            <p class="uh-login-footer">
+              <a href="#" onclick="switchResetPasswordToLoginModal(event)" class="uh-login-register-link">Back to Sign In</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Forgot Password Modal Functions
+    function openForgotPasswordModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeLoginModal();
+      const backdrop = document.getElementById('uhForgotPasswordModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeForgotPasswordModal() {
+      const backdrop = document.getElementById('uhForgotPasswordModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Verify OTP Modal Functions
+    function openVerifyOtpModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeForgotPasswordModal();
+      const backdrop = document.getElementById('uhVerifyOtpModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeVerifyOtpModal() {
+      const backdrop = document.getElementById('uhVerifyOtpModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    function clearVerifyOtpInputs() {
+      document.querySelectorAll('.uh-otp-digit').forEach(function(input) {
+        input.value = '';
+      });
+      document.getElementById('uh_verify_otp').value = '';
+    }
+
+    // Reset Password Modal Functions
+    function openResetPasswordModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeVerifyOtpModal();
+      const backdrop = document.getElementById('uhResetPasswordModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeResetPasswordModal() {
+      const backdrop = document.getElementById('uhResetPasswordModalBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Navigation between modals
+    function switchForgotToLoginModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeForgotPasswordModal();
+      openLoginModal(null);
+    }
+
+    function switchVerifyOtpToForgotPasswordModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeVerifyOtpModal();
+      openForgotPasswordModal(null);
+    }
+
+    function switchResetPasswordToLoginModal(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      closeResetPasswordModal();
+      openLoginModal(null);
+    }
+
+    // Close all password reset modals on Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeForgotPasswordModal();
+        closeVerifyOtpModal();
+        closeResetPasswordModal();
+      }
+    });
+
+    // Forgot Password Form Handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const forgotPasswordForm = document.getElementById('uh-forgot-password-form');
+      if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const email = document.getElementById('uh_forgot_email').value.trim();
+          const csrfToken = forgotPasswordForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
+          fetch(forgotPasswordForm.action, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'email=' + encodeURIComponent(email)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showNotification(data.message || 'OTP sent successfully. Check your email.', 'success');
+              openVerifyOtpModal(null);
+            } else {
+              showNotification(data.message || 'Email is not registered.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+          });
+        });
+      }
+    });
+
+    // Verify OTP Form Handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const otpInputs = Array.from(document.querySelectorAll('.uh-otp-digit'));
+      const otpValue = document.getElementById('uh_verify_otp');
+
+      otpInputs.forEach(function(input, index) {
+        input.addEventListener('input', function() {
+          input.value = input.value.replace(/\D/g, '').slice(0, 1);
+          otpValue.value = otpInputs.map(function(digitInput) { return digitInput.value; }).join('');
+          if (input.value && index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', function(event) {
+          if (event.key === 'Backspace' && !input.value && index > 0) {
+            otpInputs[index - 1].focus();
+          }
+        });
+
+        input.addEventListener('paste', function(event) {
+          event.preventDefault();
+          const pastedValue = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+          pastedValue.split('').forEach(function(digit, pastedIndex) {
+            if (otpInputs[index + pastedIndex]) {
+              otpInputs[index + pastedIndex].value = digit;
+            }
+          });
+          otpValue.value = otpInputs.map(function(digitInput) { return digitInput.value; }).join('');
+          otpInputs[Math.min(index + pastedValue.length, otpInputs.length - 1)].focus();
+        });
+      });
+
+      const verifyOtpForm = document.getElementById('uh-verify-otp-form');
+      if (verifyOtpForm) {
+        verifyOtpForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const otp = document.getElementById('uh_verify_otp').value.trim();
+          const csrfToken = '{{ csrf_token }}';
+          
+          // Submit via AJAX
+          fetch('{% url "core:verify_reset_otp" %}', {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'otp=' + encodeURIComponent(otp)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showNotification('OTP verified! Proceed to set new password.', 'success');
+              clearVerifyOtpInputs();
+              // Switch to reset password modal
+              closeVerifyOtpModal();
+              setTimeout(() => openResetPasswordModal(null), 300);
+            } else {
+              showNotification(data.message || 'Invalid OTP', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+          });
+        });
+      }
+    });
+
+    // Reset Password Form Handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const resetPasswordForm = document.getElementById('uh-reset-password-form');
+      if (resetPasswordForm) {
+        resetPasswordForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const password1 = document.getElementById('uh_reset_new_password1').value;
+          const password2 = document.getElementById('uh_reset_new_password2').value;
+          const csrfToken = '{{ csrf_token }}';
+          
+          if (password1 !== password2) {
+            showNotification('Passwords do not match', 'error');
+            return;
+          }
+          
+          if (password1.length < 8) {
+            showNotification('Password must be at least 8 characters', 'error');
+            return;
+          }
+          
+          // Submit via AJAX
+          fetch('{% url "core:reset_password" %}', {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'new_password1=' + encodeURIComponent(password1) + '&new_password2=' + encodeURIComponent(password2)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showNotification('Password updated successfully! Redirecting to login...', 'success');
+              document.getElementById('uh_reset_new_password1').value = '';
+              document.getElementById('uh_reset_new_password2').value = '';
+              // Switch to login modal
+              closeResetPasswordModal();
+              setTimeout(() => openLoginModal(null), 300);
+            } else {
+              showNotification(data.message || 'Failed to update password', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+          });
+        });
+      }
+    });
+  </script>
+
+  <!-- Auto-open password reset modals based on URL parameter -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const modalToOpen = urlParams.get('modal');
+      const resetParam = urlParams.get('reset');
+      
+      if (modalToOpen === 'login') {
+        if (resetParam === '1') {
+          // Show success message
+          showNotification('Password reset successfully! Please sign in with your new password.', 'success');
+        }
+        openLoginModal(null);
+      } else if (modalToOpen === 'register') {
+        openRegisterModal(null);
+      } else if (modalToOpen === 'forgot-password') {
+        openForgotPasswordModal(null);
+      } else if (modalToOpen === 'verify-otp') {
+        openVerifyOtpModal(null);
+      } else if (modalToOpen === 'reset-password') {
+        openResetPasswordModal(null);
+      }
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

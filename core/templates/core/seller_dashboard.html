@@ -1,0 +1,558 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Seller Dashboard | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="seller-dashboard-wrapper">
+  <!-- Seller Portfolio Header -->
+  <div class="seller-header-section">
+    <div class="seller-header-content">
+      <div>
+        <span class="seller-eyebrow">SELLER WORKSPACE</span>
+        <h1 class="seller-title">Seller Portfolio</h1>
+        <p class="seller-subtitle">List properties, manage your portfolio, and keep your listings up to date.</p>
+      </div>
+      <div class="seller-header-action">
+        <a href="#add-property-section" class="btn btn-dark btn-sm">List Property →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Property Section -->
+  <div class="add-property-section" id="add-property-section">
+    <div class="add-property-container">
+      <h2 class="section-heading">Add New Property Listing</h2>
+      
+      <form method="post" enctype="multipart/form-data" class="property-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label" for="id_title">Property Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}<div class="form-error">{{ form.title.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-col">
+            <label class="form-label" for="id_price">Price (₹)</label>
+            {{ form.price }}
+            {% if form.price.errors %}<div class="form-error">{{ form.price.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label" for="id_location">Location / Area</label>
+            {{ form.location }}
+            {% if form.location.errors %}<div class="form-error">{{ form.location.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-col">
+            <label class="form-label" for="id_property_type">Property Type</label>
+            {{ form.property_type }}
+            {% if form.property_type.errors %}<div class="form-error">{{ form.property_type.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label class="form-label" for="id_description">Property Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}<div class="form-error">{{ form.description.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label class="form-label" for="id_amenities">Amenities (One per line)</label>
+            {{ form.amenities }}
+            {% if form.amenities.errors %}<div class="form-error">{{ form.amenities.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label class="form-label" for="id_image">Property Image</label>
+            {{ form.image }}
+            {% if form.image.errors %}<div class="form-error">{{ form.image.errors }}</div>{% endif %}
+          </div>
+
+          <div class="form-col">
+            <label class="form-label" for="id_documents">Property Documents (PDF/Doc)</label>
+            {{ form.documents }}
+            {% if form.documents.errors %}<div class="form-error">{{ form.documents.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-dark">Create Property Listing →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Listed Properties Section -->
+  <div class="listed-properties-section">
+    <div class="listed-properties-container">
+      <h2 class="section-heading">Your Listed Properties</h2>
+      
+      {% if properties %}
+        <div class="properties-list">
+          {% for property in properties %}
+            <div class="property-card">
+              <div class="property-image">
+                {% if property.image %}
+                  <img src="{{ property.image.url }}" alt="{{ property.title }}" />
+                {% else %}
+                  <div class="property-image-placeholder">No Image</div>
+                {% endif %}
+              </div>
+              
+              <div class="property-details">
+                <h3 class="property-title">
+                  <a href="{% url 'core:property_detail' property.pk %}">{{ property.title }}</a>
+                </h3>
+                <p class="property-location">{{ property.location }}</p>
+                
+                <div class="property-meta">
+                  <span class="meta-item">{{ property.get_property_type_display }}</span>
+                  <span class="meta-item">₹{{ property.price }}</span>
+                </div>
+
+                <div class="property-badges">
+                  {% if property.is_verified %}
+                    <span class="badge badge-verified">Approved</span>
+                  {% else %}
+                    <span class="badge badge-pending">Pending</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="property-actions">
+                <a href="{% url 'core:property_detail' property.pk %}" class="action-btn action-view">View</a>
+                <a href="{% url 'core:edit_property' property.pk %}" class="action-btn action-edit">Edit</a>
+                <form method="post" action="{% url 'core:delete_property' property.pk %}" class="action-form">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn action-delete" onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <p>No properties added yet. Create your first listing to get started!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.seller-dashboard-wrapper {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.seller-header-section {
+  margin-bottom: 60px;
+}
+
+.seller-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+.seller-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.seller-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+}
+
+.seller-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.seller-header-action {
+  margin-top: 4px;
+}
+
+/* Add Property Section */
+.add-property-section {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 50px;
+  margin-bottom: 60px;
+}
+
+.add-property-container {
+  max-width: 100%;
+}
+
+.section-heading {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 40px 0;
+}
+
+.property-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.form-row .full-width {
+  grid-column: 1 / -1;
+}
+
+.form-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-col.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.property-form input[type="text"],
+.property-form input[type="email"],
+.property-form input[type="number"],
+.property-form input[type="file"],
+.property-form select,
+.property-form textarea {
+  font-size: 14px;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  color: #333;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.property-form input[type="text"]:focus,
+.property-form input[type="email"]:focus,
+.property-form input[type="number"]:focus,
+.property-form input[type="file"]:focus,
+.property-form select:focus,
+.property-form textarea:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: inset 0 0 0 1px #000;
+}
+
+.property-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-error {
+  font-size: 12px;
+  color: #d32f2f;
+  margin-top: 6px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 40px;
+}
+
+/* Buttons */
+.btn-dark {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn-dark:hover {
+  background-color: #222;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* Listed Properties Section */
+.listed-properties-section {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 50px;
+}
+
+.listed-properties-container {
+  max-width: 100%;
+}
+
+.properties-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.property-card {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.property-image {
+  width: 100%;
+  height: 180px;
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.property-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.property-card:hover .property-image img {
+  transform: scale(1.05);
+}
+
+.property-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.property-details {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.property-title a {
+  color: #000;
+  text-decoration: none;
+}
+
+.property-title a:hover {
+  color: #2d9e50;
+}
+
+.property-location {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 12px 0;
+}
+
+.property-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  font-size: 12px;
+  color: #666;
+  padding: 4px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.property-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.badge-verified {
+  background-color: #e8f5e9;
+  color: #2d9e50;
+  border: 1px solid #c8e6c9;
+}
+
+.badge-pending {
+  background-color: #fff3e0;
+  color: #f57c00;
+  border: 1px solid #ffe0b2;
+}
+
+.property-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #000;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.action-btn:hover {
+  border-color: #000;
+  background: #f5f5f5;
+}
+
+.action-delete:hover {
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+.action-form {
+  width: 100%;
+}
+
+.action-form .action-btn {
+  width: 100%;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .seller-dashboard-wrapper {
+    padding: 30px 15px;
+  }
+
+  .seller-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .seller-title {
+    font-size: 32px;
+  }
+
+  .add-property-section,
+  .listed-properties-section {
+    padding: 30px 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .properties-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .seller-title {
+    font-size: 26px;
+  }
+
+  .add-property-section,
+  .listed-properties-section {
+    padding: 20px 15px;
+  }
+
+  .section-heading {
+    font-size: 20px;
+    margin-bottom: 25px;
+  }
+
+  .property-form input,
+  .property-form select,
+  .property-form textarea {
+    font-size: 16px;
+    padding: 12px;
+  }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Properties | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="container-xxl py-4 py-lg-5">
+<!-- Search & Filter Bar -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+  <div class="card-body p-4">
+    <form method="get" action="{% url 'core:property_list' %}" class="row g-3 align-items-end">
+      <!-- Search Keyword -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <label for="id_q" class="form-label">Keyword Search</label>
+        <input
+          type="text"
+          id="id_q"
+          name="q"
+          value="{{ current_q|default:'' }}"
+          class="form-control"
+          placeholder="Title, keyword, seller..."
+        />
+      </div>
+
+      <!-- Location Filter -->
+      <div class="col-12 col-md-4 col-lg-3">
+        <label for="id_location" class="form-label">Location</label>
+        <input
+          type="text"
+          id="id_location"
+          name="location"
+          value="{{ current_location|default:'' }}"
+          class="form-control"
+          placeholder="Location or area..."
+        />
+      </div>
+
+      <!-- Property Type Filter -->
+      <div class="col-12 col-md-4 col-lg-2">
+        <label for="id_property_type" class="form-label">Property Type</label>
+        <select id="id_property_type" name="property_type" class="form-select">
+          <option value="">All Types</option>
+          <option value="sell" {% if current_property_type == 'sell' %}selected{% endif %}>For Sale</option>
+          <option value="rent" {% if current_property_type == 'rent' %}selected{% endif %}>For Rent</option>
+        </select>
+      </div>
+
+      <!-- Min Price -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <label for="id_min_price" class="form-label">Min Price (₹)</label>
+        <input
+          type="number"
+          id="id_min_price"
+          name="min_price"
+          value="{{ current_min_price|default:'' }}"
+          class="form-control"
+          placeholder="Min"
+        />
+      </div>
+
+      <!-- Max Price -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <label for="id_max_price" class="form-label">Max Price (₹)</label>
+        <input
+          type="number"
+          id="id_max_price"
+          name="max_price"
+          value="{{ current_max_price|default:'' }}"
+          class="form-control"
+          placeholder="Max"
+        />
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+        {% if current_q or current_location or current_property_type or current_min_price or current_max_price %}
+          <a href="{% url 'core:property_list' %}" class="btn btn-outline-secondary btn-sm">Reset Filters</a>
+        {% endif %}
+        <button type="submit" class="btn btn-sm px-4 fw-semibold text-white" style="background-color: #000000; border-color: #000000;">Apply Filters</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Property Grid -->
+<div class="row g-4 mb-5">
+  {% for property in properties %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <article class="uh-property-card">
+        <a href="{% url 'core:property_detail' property.pk %}" class="uh-card-link-wrapper" aria-label="{{ property.title }}">
+          <div class="uh-card-media-wrapper">
+            {% if property.image %}
+              <img src="{{ property.image.url }}" alt="{{ property.title }}" class="uh-card-img" loading="lazy" />
+            {% else %}
+              <div class="uh-card-media-placeholder">
+                <span>Urban Hunt</span>
+              </div>
+            {% endif %}
+
+            <!-- Dark transparent gradient overlay at bottom -->
+            <div class="uh-card-gradient-overlay"></div>
+
+            <!-- Badges overlay -->
+            <div class="uh-card-badges-left">
+              {% if property.property_type == 'sell' %}
+                <span class="uh-badge uh-badge-sell">For Sale</span>
+              {% else %}
+                <span class="uh-badge uh-badge-rent">For Rent</span>
+              {% endif %}
+
+              {% if property.is_verified %}
+                <span class="uh-badge uh-badge-verified">Verified</span>
+              {% endif %}
+            </div>
+
+            <!-- Favorite / Heart Button -->
+            {% if request.user.is_authenticated and request.user.role == 'buyer' %}
+              <button
+                type="button"
+                class="uh-card-fav-btn {% if property.pk in saved_property_ids %}saved{% endif %}"
+                data-property-id="{{ property.pk }}"
+                title="Save listing"
+                aria-label="Save listing"
+                onclick="toggleSaveProperty(this, event, {{ property.pk }})"
+              >
+                <svg viewBox="0 0 24 24" class="uh-heart-icon"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              </button>
+            {% endif %}
+
+            <!-- Property Overlay Details -->
+            <div class="uh-card-overlay-content">
+              <div class="uh-card-seller-inline">
+                <div class="uh-seller-inline-avatar">
+                  {% if property.seller.avatar %}
+                    <img src="{{ property.seller.avatar.url }}" alt="{{ property.seller.username }}" />
+                  {% else %}
+                    {{ property.seller.username|first|upper }}
+                  {% endif %}
+                </div>
+                <div class="uh-seller-inline-info">
+                  <span class="uh-seller-inline-label">Listed by</span>
+                  <span class="uh-seller-inline-name">{{ property.seller.get_full_name|default:property.seller.username }}</span>
+                </div>
+              </div>
+              <h3 class="uh-card-title">{{ property.title }}</h3>
+              <div class="uh-card-price">
+                {% if '₹' in property.price %}{{ property.price }}{% else %}₹{{ property.price }}{% endif %}{% if property.property_type == 'rent' and '/mo' not in property.price and 'mo' not in property.price %}<span class="uh-price-period">/mo</span>{% endif %}
+              </div>
+              <div class="uh-card-specs">
+                <span class="uh-spec-location">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px; vertical-align: -1px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5-2.5-1.12 2.5-2.5-2.5 2.5z"/></svg>
+                  {{ property.location }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </article>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="bg-white border rounded-4 p-5 text-center my-4">
+        <h2 class="h4 mb-2">No properties matched your criteria</h2>
+        <p class="text-secondary mb-4">Try adjusting your keyword, location, or price filters to explore more options.</p>
+        <a href="{% url 'core:property_list' %}" class="btn btn-accent px-4">Reset Search Filters</a>
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+
+  <!-- Minimalist Underline Pagination (Image 0 replica) -->
+  {% if page_obj.has_other_pages %}
+    <nav class="uh-pagination-wrap" aria-label="Property catalog pagination">
+      <div class="uh-pagination">
+        {% for p in page_obj.paginator.page_range %}
+          <a href="?page={{ p }}{% if filters.q %}&q={{ filters.q }}{% endif %}{% if filters.location %}&location={{ filters.location }}{% endif %}{% if filters.property_type %}&property_type={{ filters.property_type }}{% endif %}{% if filters.min_price %}&min_price={{ filters.min_price }}{% endif %}{% if filters.max_price %}&max_price={{ filters.max_price }}{% endif %}" 
+             class="uh-page-link {% if page_obj.number == p %}active{% endif %}">
+            <span class="uh-page-num">{{ p }}</span>
+            <span class="uh-page-bar"></span>
+          </a>
+        {% endfor %}
+      </div>
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

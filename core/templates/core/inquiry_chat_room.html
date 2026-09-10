@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="chat-shell mb-4">
+  <!-- Topbar Header -->
+  <header class="chat-topbar">
+    <div class="chat-persona">
+      <div class="chat-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        {% if is_seller_owner %}
+          {% if inquiry.buyer.avatar %}
+            <img src="{{ inquiry.buyer.avatar.url }}" alt="{{ inquiry.buyer.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+          {% else %}
+            {{ inquiry.buyer.username|first|upper }}
+          {% endif %}
+        {% else %}
+          {% if inquiry.property.seller.avatar %}
+            <img src="{{ inquiry.property.seller.avatar.url }}" alt="{{ inquiry.property.seller.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+          {% else %}
+            {{ inquiry.property.seller.username|first|upper }}
+          {% endif %}
+        {% endif %}
+      </div>
+      <div>
+        <p class="eyebrow mb-0" style="font-size: 0.65rem;">
+          {% if is_seller_owner %}
+            BUYER CONVERSATION
+          {% else %}
+            SELLER CONVERSATION
+          {% endif %}
+        </p>
+        <h1 class="h5 mb-0 fw-bold">
+          {% if is_seller_owner %}
+            {{ inquiry.buyer.username }}
+          {% else %}
+            {{ inquiry.property.seller.username }}
+          {% endif %}
+        </h1>
+        <p class="small text-secondary mb-0">
+          Property:
+          <a class="fw-semibold text-accent-blue" href="{% url 'core:property_detail' inquiry.property.pk %}">{{ inquiry.property.title }}</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="d-none d-md-flex align-items-center gap-2">
+      <span class="badge bg-light text-dark border">Buyer: {{ inquiry.buyer.username }}</span>
+      <span class="badge bg-light text-dark border">Seller: {{ inquiry.property.seller.username }}</span>
+    </div>
+  </header>
+
+  <!-- Message Thread Container -->
+  <div
+    class="chat-thread"
+    id="chat-thread"
+    data-messages-url="{% url 'core:inquiry_chat_messages' inquiry.pk %}"
+    data-mark-read-url="{% url 'core:api_mark_inquiry_read' inquiry.pk %}"
+    data-user-id="{{ request.user.id }}"
+    data-last-message-id="{{ latest_message_id }}"
+  >
+    {% for item in messages %}
+      <article
+        class="message-row {% if item.sender_id == request.user.id %}message-self{% else %}message-other{% endif %}"
+        data-message-id="{{ item.id }}"
+      >
+        <div class="message-bubble">
+          <p class="message-role">
+            {% if item.sender_id == inquiry.buyer_id %}
+              Buyer
+            {% elif item.sender_id == inquiry.property.seller_id %}
+              Seller
+            {% else %}
+              User
+            {% endif %}
+            &bull; {{ item.sender.username }}
+          </p>
+          <p class="message-text">{{ item.message }}</p>
+          <p class="message-time">{{ item.created_at|date:"M d, Y, g:i A" }}</p>
+        </div>
+      </article>
+    {% empty %}
+      <div class="text-center text-secondary my-auto py-5" id="chat-empty-state">
+        Start the conversation. Send your message below!
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Message Composer Form -->
+  <form method="post" class="chat-composer" id="chat-form">
+    {% csrf_token %}
+    {% if inquiry.property.status != 'available' and is_buyer_owner %}
+      <div class="alert alert-warning py-2 px-3 mb-0 w-100 rounded-3 small" role="alert">
+        <strong>⚠️ Property {{ inquiry.property.get_status_display }}</strong> — This property is currently not available for new inquiries.
+      </div>
+    {% endif %}
+
+    <label class="visually-hidden" for="id_message">Message</label>
+    <textarea
+      id="id_message"
+      name="message"
+      rows="1"
+      class="form-control"
+      {% if inquiry.property.status != 'available' and is_buyer_owner %}disabled{% endif %}
+      required
+      placeholder="{% if is_seller_owner %}Reply to buyer...{% elif inquiry.property.status != 'available' %}This property is no longer available{% else %}Type your message...{% endif %}"
+    ></textarea>
+
+    <button
+      type="submit"
+      class="btn btn-accent px-4 py-2"
+      id="chat-submit"
+      {% if inquiry.property.status != 'available' and is_buyer_owner %}disabled{% endif %}
+    >
+      {% if is_seller_owner %}Send Reply{% else %}Send{% endif %}
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (() => {
+    const form = document.getElementById("chat-form");
+    const thread = document.getElementById("chat-thread");
+    const input = document.getElementById("id_message");
+    const submitButton = document.getElementById("chat-submit");
+    const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+    const messagesUrl = thread.dataset.messagesUrl;
+    const markReadUrl = thread.dataset.markReadUrl;
+    const currentUserId = Number(thread.dataset.userId);
+    let lastMessageId = Number(thread.dataset.lastMessageId || "0");
+    let isSending = false;
+    let pollHandle = null;
+
+    async function markMessagesAsRead() {
+      try {
+        const response = await fetch(markReadUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            updateNotificationBell(data.unread_count);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to mark messages as read:', error);
+      }
+    }
+
+    function updateNotificationBell(unreadCount) {
+      const bellButton = document.querySelector('.notification-bell-btn');
+      if (!bellButton) return;
+      const badge = bellButton.querySelector('.notification-count');
+      if (unreadCount > 0) {
+        if (badge) {
+          badge.textContent = unreadCount;
+        } else {
+          const newBadge = document.createElement('span');
+          newBadge.className = 'notification-count';
+          newBadge.textContent = unreadCount;
+          bellButton.appendChild(newBadge);
+        }
+      } else if (badge) {
+        badge.remove();
+      }
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function scrollToBottom(force = false) {
+      const nearBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 140;
+      if (force || nearBottom) {
+        thread.scrollTop = thread.scrollHeight;
+      }
+    }
+
+    function removeEmptyState() {
+      const emptyState = document.getElementById("chat-empty-state");
+      if (emptyState) emptyState.remove();
+    }
+
+    function buildMessageNode(message) {
+      const article = document.createElement("article");
+      article.className = `message-row ${message.is_self ? "message-self" : "message-other"}`;
+      article.dataset.messageId = String(message.id);
+      const roleLabel = message.sender_role === "buyer" ? "Buyer" : "Seller";
+      article.innerHTML = `
+        <div class="message-bubble">
+          <p class="message-role">${roleLabel} &bull; ${escapeHtml(message.sender_name)}</p>
+          <p class="message-text">${escapeHtml(message.message).replace(/\n/g, "<br>")}</p>
+          <p class="message-time">${escapeHtml(message.created_at_label)}</p>
+        </div>
+      `;
+      return article;
+    }
+
+    function appendMessage(message, options = {}) {
+      if (thread.querySelector(`[data-message-id="${message.id}"]`)) return;
+      removeEmptyState();
+      thread.appendChild(buildMessageNode(message));
+      lastMessageId = Math.max(lastMessageId, Number(message.id));
+      thread.dataset.lastMessageId = String(lastMessageId);
+      scrollToBottom(Boolean(options.forceScroll || message.sender_id === currentUserId));
+    }
+
+    async function fetchMessages() {
+      try {
+        const response = await fetch(`${messagesUrl}?since_id=${lastMessageId}`, {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        for (const message of payload.messages) {
+          appendMessage(message);
+        }
+      } catch (error) {
+        console.error("Failed to refresh chat messages", error);
+      }
+    }
+
+    async function sendMessage(messageText) {
+      if (isSending) return;
+      isSending = true;
+      submitButton.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append("message", messageText);
+
+        const response = await fetch(messagesUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: formData,
+        });
+
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Unable to send message.");
+
+        appendMessage(payload.message, { forceScroll: true });
+        input.value = "";
+        input.style.height = "auto";
+        input.focus();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        isSending = false;
+        submitButton.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const messageText = input.value.trim();
+      if (!messageText) return;
+      await sendMessage(messageText);
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    scrollToBottom(true);
+    markMessagesAsRead();
+    pollHandle = window.setInterval(fetchMessages, 3000);
+    window.addEventListener("beforeunload", () => {
+      if (pollHandle) window.clearInterval(pollHandle);
+    });
+  })();
+</script>
+{% endblock %}

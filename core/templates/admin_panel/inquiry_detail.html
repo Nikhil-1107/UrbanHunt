@@ -1,0 +1,76 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Inquiry Detail{% endblock %}
+{% block breadcrumb %}<span class="breadcrumb-sep">›</span><a href="{% url 'core:admin_inquiries' %}">Inquiries</a><span class="breadcrumb-sep">›</span><span>#{{ inquiry.id }}</span>{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Inquiry #{{ inquiry.id }}</h1>
+    <p class="page-subtitle">Thread between buyer and seller for this property.</p>
+  </div>
+</div>
+
+<div class="table-card" style="margin-bottom:16px;">
+  <div class="table-card-header">
+    <span class="table-card-title">Inquiry Information</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="admin-table">
+      <tbody>
+        <tr><th style="width:180px;">Buyer</th><td>{{ inquiry.buyer.username }}</td></tr>
+        <tr><th>Seller</th><td>{{ inquiry.property.seller.username }}</td></tr>
+        <tr><th>Property</th><td>{{ inquiry.property.title }}</td></tr>
+        <tr><th>Started</th><td>{{ inquiry.created_at|date:"d M Y, h:i A" }}</td></tr>
+        <tr><th>Initial Message</th><td>{{ inquiry.message }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-card-header">
+    <span class="table-card-title">Messages ({{ messages|length }})</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Sender</th>
+          <th>Role</th>
+          <th>Message</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for msg in messages %}
+        <tr>
+          <td>{{ msg.created_at|date:"d M Y, h:i A" }}</td>
+          <td>{{ msg.sender.username }}</td>
+          <td>
+            {% if msg.sender_id == inquiry.buyer_id %}
+              Buyer
+            {% elif msg.sender_id == inquiry.property.seller_id %}
+              Seller
+            {% else %}
+              Other
+            {% endif %}
+          </td>
+          <td>{{ msg.message }}</td>
+          <td>
+            {% if msg.read_at %}
+              <span class="badge badge--green">Read</span>
+            {% else %}
+              <span class="badge badge--blue">Unread</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="table-empty">No messages in this inquiry yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

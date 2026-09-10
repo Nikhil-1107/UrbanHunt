@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="uh-contact-page">
+  <!-- Hero Banner Visual Image -->
+  <section class="uh-contact-visual" aria-label="Urban Hunt Offices banner">
+    <div class="uh-contact-visual-image" style="background-image: url('/media/logo/6.jpg');"></div>
+  </section>
+
+  <!-- Overlapping Offices Card (Resideo Design) -->
+  <section class="uh-contact-locations-wrap" aria-labelledby="locations-heading">
+    <div class="container-xxl">
+      <div class="uh-contact-locations">
+        <h2 id="locations-heading" class="uh-contact-locations-title">Our Offices</h2>
+        <div class="uh-contact-location-grid">
+          <article class="uh-contact-location">
+            <h3 class="uh-location-city">Ahmedabad</h3>
+            <p class="uh-location-address">
+              90 SG Highway, 3rd Floor<br>
+              Ahmedabad, GJ 380054
+            </p>
+            <p class="uh-location-contact">
+              <a href="tel:+919876543210">(123) 789-7390</a><br>
+              <a href="mailto:office-ahmedabad@urbanhunt.in">office-ahmedabad@urbanhunt.in</a>
+            </p>
+          </article>
+          <article class="uh-contact-location">
+            <h3 class="uh-location-city">Mumbai</h3>
+            <p class="uh-location-address">
+              90 Linking Road, 3rd Floor<br>
+              Mumbai, MH 400050
+            </p>
+            <p class="uh-location-contact">
+              <a href="tel:+919876543210">(123) 789-7390</a><br>
+              <a href="mailto:office-mumbai@urbanhunt.in">office-mumbai@urbanhunt.in</a>
+            </p>
+          </article>
+          <article class="uh-contact-location">
+            <h3 class="uh-location-city">Bengaluru</h3>
+            <p class="uh-location-address">
+              90 Whitefield Road, 3rd Floor<br>
+              Bengaluru, KA 560066
+            </p>
+            <p class="uh-location-contact">
+              <a href="tel:+919876543210">(123) 789-7390</a><br>
+              <a href="mailto:office-bengaluru@urbanhunt.in">office-bengaluru@urbanhunt.in</a>
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form & Map Section (Resideo Design) -->
+  <section class="uh-contact-panel-wrap">
+    <div class="container-xxl">
+      <div class="uh-contact-panel">
+        <!-- Left Column: Send Us A Message Form -->
+        <div class="uh-contact-form-column">
+          <h2 class="uh-form-card-title">Send Us A Message</h2>
+          <form method="post" action="{% url 'core:contact' %}" id="contactForm" class="uh-contact-form" onsubmit="handleContactSubmit(event); return false;">
+            {% csrf_token %}
+            <div class="uh-contact-form-grid">
+              <div class="uh-contact-field">
+                <input type="text" id="id_full_name" name="full_name" placeholder="Name" required class="uh-form-input">
+              </div>
+              <div class="uh-contact-field">
+                <input type="email" id="id_email" name="email" placeholder="Email" required class="uh-form-input">
+              </div>
+              <div class="uh-contact-field">
+                <select id="id_subject" name="subject" class="uh-form-select" required>
+                  <option value="" disabled selected>What is this regarding?</option>
+                  <option value="Buying a property">Buying a property</option>
+                  <option value="Renting a property">Renting a property</option>
+                  <option value="Listing a property">Listing a property</option>
+                  <option value="General enquiry">General enquiry</option>
+                </select>
+              </div>
+              <div class="uh-contact-field">
+                <input type="tel" id="id_phone" name="phone" placeholder="Phone (optional)" class="uh-form-input">
+              </div>
+              <div class="uh-contact-field uh-contact-field-full">
+                <textarea id="id_message" name="message" rows="5" placeholder="Message" required class="uh-form-textarea"></textarea>
+              </div>
+            </div>
+            <button type="submit" class="uh-contact-send-btn" id="contactSendBtn">SEND MESSAGE</button>
+          </form>
+        </div>
+
+        <!-- Right Column: Our Locations Map -->
+        <div class="uh-contact-map-column">
+          <div class="uh-map-header">
+            <h2 class="uh-map-card-title">Our Locations</h2>
+            <select id="officeLocationSelect" class="uh-office-select" onchange="updateContactMap(this.value)">
+              <option value="ahmedabad">Ahmedabad</option>
+              <option value="mumbai">Mumbai</option>
+              <option value="bengaluru">Bengaluru</option>
+            </select>
+          </div>
+          <div class="uh-contact-map-wrapper">
+            <iframe
+              id="officeMapIframe"
+              src="https://maps.google.com/maps?q=90+SG+Highway+Ahmedabad+GJ+380054&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="100%"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = '{{ csrf_token }}';
+
+function updateContactMap(cityKey) {
+  const mapIframe = document.getElementById('officeMapIframe');
+  if (!mapIframe) return;
+  const maps = {
+    'ahmedabad': 'https://maps.google.com/maps?q=90+SG+Highway+Ahmedabad+GJ+380054&t=&z=16&ie=UTF8&iwloc=&output=embed',
+    'mumbai': 'https://maps.google.com/maps?q=90+Linking+Road+Bandra+West+Mumbai+MH+400050&t=&z=16&ie=UTF8&iwloc=&output=embed',
+    'bengaluru': 'https://maps.google.com/maps?q=90+Whitefield+Road+Bengaluru+KA+560066&t=&z=16&ie=UTF8&iwloc=&output=embed'
+  };
+  if (maps[cityKey]) {
+    mapIframe.src = maps[cityKey];
+  }
+}
+
+// Handle Contact Form Submission
+function handleContactSubmit(e) {
+  e.preventDefault();
+  console.log('Contact form submitted');
+  
+  const contactForm = document.getElementById('contactForm');
+  const sendBtn = document.getElementById('contactSendBtn');
+  const originalText = sendBtn.textContent;
+  
+  // Disable button during submission
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Sending...';
+
+  const formData = new FormData(contactForm);
+
+  fetch(contactForm.action, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: formData
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response data:', data);
+    if (data.success) {
+      console.log('SUCCESS - showing popup');
+      showContactSuccessPopup();
+      contactForm.reset();
+    } else {
+      console.log('ERROR from backend:', data.message);
+      showNotification(data.message || 'Failed to send message', 'error');
+    }
+  })
+  .catch(err => {
+    console.error('Fetch error:', err);
+    showNotification('An error occurred while sending the message. Please try again.', 'error');
+  })
+  .finally(() => {
+    sendBtn.disabled = false;
+    sendBtn.textContent = originalText;
+  });
+}
+
+// Show Contact Success Popup
+function showContactSuccessPopup() {
+  console.log('Creating success popup');
+  
+  // Remove any existing popups
+  const existingPopup = document.querySelector('[role=dialog]')?.parentElement;
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeIn 0.2s ease;
+  `;
+
+  const popup = document.createElement('div');
+  popup.style.cssText = `
+    background: white;
+    border-radius: 12px;
+    padding: 48px 32px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  `;
+
+  popup.innerHTML = `
+    <div style="margin-bottom: 24px;">
+      <svg width="80" height="80" viewBox="0 0 64 64" fill="none" style="margin: 0 auto; display: block;">
+        <circle cx="32" cy="32" r="30" stroke="#1B5E20" stroke-width="2" fill="#E8F5E9"></circle>
+        <path d="M26 32L30 36L38 28" stroke="#1B5E20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      </svg>
+    </div>
+    <h2 style="font-size: 28px; font-weight: 700; color: #111111; margin: 0 0 16px 0; font-family: 'Manrope', sans-serif;">Message Sent!</h2>
+    <p style="font-size: 16px; color: #666666; margin: 0 0 28px 0; line-height: 1.5; font-family: 'Manrope', sans-serif;">
+      Thank you for reaching out. We will contact you soon.
+    </p>
+    <button type="button" class="popup-close-btn" style="
+      padding: 14px 48px;
+      background: #1B5E20;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Manrope', sans-serif;
+    " onmouseover="this.style.background='#154620'" onmouseout="this.style.background='#1B5E20'">
+      Got it
+    </button>
+  `;
+
+  popup.setAttribute('role', 'dialog');
+  popup.setAttribute('aria-modal', 'true');
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
+  console.log('Popup DOM element created and added');
+
+  // Close button handler
+  const closeBtn = popup.querySelector('.popup-close-btn');
+  closeBtn.addEventListener('click', function() {
+    console.log('Close button clicked');
+    overlay.remove();
+  });
+
+  // Close on overlay click
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      console.log('Overlay clicked - closing popup');
+      overlay.remove();
+    }
+  });
+
+  // Auto close after 8 seconds
+  setTimeout(() => {
+    if (overlay.parentElement) {
+      console.log('Auto-closing popup');
+      overlay.style.animation = 'fadeIn 0.3s ease reverse';
+      setTimeout(() => {
+        if (overlay.parentElement) {
+          overlay.remove();
+        }
+      }, 300);
+    }
+  }, 8000);
+}
+</script>
+{% endblock %}

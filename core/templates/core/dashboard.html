@@ -1,0 +1,945 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if request.user.role == 'buyer' or active_tab == 'chat' %}Messages | Urban Hunt{% else %}Dashboard | Urban Hunt{% endif %}{% endblock %}
+
+{% if request.user.role == 'buyer' or active_tab == 'chat' %}
+  {% block footer %}{% endblock %}
+{% endif %}
+
+{% block content %}
+{% if request.user.role == 'buyer' or active_tab == 'chat' %}
+  <!-- FULL-PAGE URBAN HUNT MESSENGER WORKSPACE -->
+  <div class="uh-messenger-app" id="messengerApp">
+    <!-- LEFT SIDEBAR: CONVERSATIONS -->
+    <aside class="uh-chat-sidebar {% if active_inquiry %}d-none d-md-flex{% else %}d-flex{% endif %}" id="chatSidebar">
+      <!-- Sidebar Header -->
+      <div class="uh-chat-sidebar-header">
+        <h2 class="uh-chat-sidebar-title">Chats</h2>
+      </div>
+
+      <!-- Search Box -->
+      <div class="uh-chat-search-wrap">
+        <div class="uh-chat-search-input-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="chatSearchInput" class="uh-chat-search-input" placeholder="Search conversations" onkeyup="filterConversations()" />
+        </div>
+      </div>
+
+      <!-- Conversation List -->
+      <div class="uh-chat-list" id="conversationList">
+        {% for inq in inquiries %}
+          <a href="{% url 'core:dashboard' %}?inquiry={{ inq.pk }}{% if request.user.role == 'seller' %}&tab=chat{% endif %}" 
+             class="uh-chat-item {% if active_inquiry and active_inquiry.pk == inq.pk %}active{% endif %}"
+             data-search-term="{% if request.user.role == 'seller' %}{{ inq.buyer.get_full_name|lower }} {{ inq.buyer.username|lower }}{% else %}{{ inq.property.seller.get_full_name|lower }} {{ inq.property.seller.username|lower }}{% endif %} {{ inq.property.title|lower }} {{ inq.property.location|lower }} {{ inq.last_message_text|lower }}"
+          >
+            <div class="uh-chat-avatar-wrap">
+              {% if request.user.role == 'seller' %}
+                {% if inq.buyer.avatar %}
+                  <img src="{{ inq.buyer.avatar.url }}" alt="{{ inq.buyer.username }}" class="uh-chat-avatar-img" />
+                {% else %}
+                  <div class="uh-chat-avatar-placeholder">
+                    {{ inq.buyer.username|first|upper }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {% if inq.property.seller.avatar %}
+                  <img src="{{ inq.property.seller.avatar.url }}" alt="{{ inq.property.seller.username }}" class="uh-chat-avatar-img" />
+                {% else %}
+                  <div class="uh-chat-avatar-placeholder">
+                    {{ inq.property.seller.username|first|upper }}
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+
+            <div class="uh-chat-item-content">
+              <div class="uh-chat-item-top">
+                <span class="uh-chat-seller-name">
+                  {% if request.user.role == 'seller' %}
+                    {{ inq.buyer.get_full_name|default:inq.buyer.username }}
+                  {% else %}
+                    {{ inq.property.seller.get_full_name|default:inq.property.seller.username }}
+                  {% endif %}
+                </span>
+                <span class="uh-chat-timestamp">{{ inq.last_message_time }}</span>
+              </div>
+              <div class="uh-chat-property-title">{{ inq.property.title }}</div>
+              <div class="uh-chat-item-bottom">
+                <span class="uh-chat-last-msg">{{ inq.last_message_text|truncatechars:45 }}</span>
+                {% if inq.unread_count %}
+                  {% if not active_inquiry or inq.pk != active_inquiry.pk %}
+                    <span class="uh-chat-unread-badge">{{ inq.unread_count }}</span>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          </a>
+        {% empty %}
+          <div class="uh-chat-empty-sidebar text-center p-4">
+            <p class="text-secondary small mb-2">No property inquiries yet.</p>
+            {% if request.user.role == 'buyer' %}
+              <a href="{% url 'core:property_list' %}" class="btn btn-sm btn-dark">Browse Properties</a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: ACTIVE CHAT WORKSPACE -->
+    <main class="uh-chat-main {% if active_inquiry %}d-flex{% else %}d-none d-md-flex{% endif %}" id="chatMainPanel">
+      {% if active_inquiry %}
+        <!-- 1. Active Chat Header -->
+        <header class="uh-active-chat-header">
+          <div class="uh-active-seller-info">
+            <a href="{% url 'core:dashboard' %}{% if request.user.role == 'seller' %}?tab=chat{% endif %}" class="uh-chat-mobile-back d-md-none me-2" title="Back to chats">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+
+            <div class="uh-active-avatar-wrap">
+              {% if request.user.role == 'seller' %}
+                {% if active_inquiry.buyer.avatar %}
+                  <img src="{{ active_inquiry.buyer.avatar.url }}" alt="{{ active_inquiry.buyer.username }}" />
+                {% else %}
+                  <div class="uh-active-avatar-placeholder">
+                    {{ active_inquiry.buyer.username|first|upper }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {% if active_inquiry.property.seller.avatar %}
+                  <img src="{{ active_inquiry.property.seller.avatar.url }}" alt="{{ active_inquiry.property.seller.username }}" />
+                {% else %}
+                  <div class="uh-active-avatar-placeholder">
+                    {{ active_inquiry.property.seller.username|first|upper }}
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+
+            <div class="uh-active-seller-meta">
+              <h3 class="uh-active-seller-name">
+                {% if request.user.role == 'seller' %}
+                  {{ active_inquiry.buyer.get_full_name|default:active_inquiry.buyer.username }}
+                {% else %}
+                  {{ active_inquiry.property.seller.get_full_name|default:active_inquiry.property.seller.username }}
+                {% endif %}
+              </h3>
+              <p class="uh-active-seller-subtitle">{{ active_inquiry.property.title }}</p>
+            </div>
+          </div>
+
+          <div class="uh-active-chat-header-actions">
+            <!-- 3-Dot Dropdown Menu -->
+            <div class="dropdown">
+              <button class="uh-active-action-btn" title="More options" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="6" r="1.5"></circle><circle cx="12" cy="18" r="1.5"></circle></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="border-radius: 12px; min-width: 170px;">
+                {% if request.user.role == 'seller' %}
+                  {% if active_inquiry.property.status == 'available' %}
+                    <form method="post" action="{% url 'core:update_property_status' active_inquiry.property.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="{% if active_inquiry.property.property_type == 'sell' %}sold{% else %}rented{% endif %}" />
+                      <input type="hidden" name="next" value="{% url 'core:dashboard' %}?inquiry={{ active_inquiry.pk }}&tab=chat" />
+                      <button type="submit" class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 small fw-medium border-0 bg-transparent w-100 text-start" style="color: #e67e22;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Mark as {% if active_inquiry.property.property_type == 'sell' %}Sold{% else %}Rented{% endif %}
+                      </button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{% url 'core:update_property_status' active_inquiry.property.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="available" />
+                      <input type="hidden" name="next" value="{% url 'core:dashboard' %}?inquiry={{ active_inquiry.pk }}&tab=chat" />
+                      <button type="submit" class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 small fw-medium border-0 bg-transparent w-100 text-start" style="color: #27ae60;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                        Re-open listing
+                      </button>
+                    </form>
+                  {% endif %}
+                  <div class="dropdown-divider my-1"></div>
+                {% endif %}
+                <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 small fw-medium" style="color: #c0392b;" href="{% url 'core:dashboard' %}?inquiry=0{% if request.user.role == 'seller' %}&tab=chat{% endif %}">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  Close panel
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- 2. Compact Property Context Strip -->
+        <div class="uh-property-context-card">
+          <div class="uh-property-context-inner">
+            <div class="uh-property-context-thumb">
+              {% if active_inquiry.property.image %}
+                <img src="{{ active_inquiry.property.image.url }}" alt="{{ active_inquiry.property.title }}" />
+              {% else %}
+                <div class="uh-property-context-placeholder">Urban Hunt</div>
+              {% endif %}
+            </div>
+            <div class="uh-property-context-details">
+              <h4 class="uh-property-context-title">{{ active_inquiry.property.title }}</h4>
+              <p class="uh-property-context-location">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5-2.5 2.5z"/></svg>
+                {{ active_inquiry.property.location }}
+              </p>
+              <p class="uh-property-context-price">
+                {% if '₹' in active_inquiry.property.price %}{{ active_inquiry.property.price }}{% else %}₹ {{ active_inquiry.property.price }}{% endif %}
+                {% if active_inquiry.property.property_type == 'rent' %}<span class="text-muted fs-7">/mo</span>{% endif %}
+              </p>
+            </div>
+            <div class="uh-property-context-action d-flex align-items-center gap-2">
+              {% if request.user.role == 'seller' %}
+                {% if active_inquiry.property.status == 'available' %}
+                  <form method="post" action="{% url 'core:update_property_status' active_inquiry.property.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="{% if active_inquiry.property.property_type == 'sell' %}sold{% else %}rented{% endif %}" />
+                    <input type="hidden" name="next" value="{% url 'core:dashboard' %}?inquiry={{ active_inquiry.pk }}&tab=chat" />
+                    <button type="submit" class="uh-status-toggle-btn uh-status-toggle--close">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                      {% if active_inquiry.property.property_type == 'sell' %}Sold{% else %}Rented{% endif %}
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'core:update_property_status' active_inquiry.property.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="available" />
+                    <input type="hidden" name="next" value="{% url 'core:dashboard' %}?inquiry={{ active_inquiry.pk }}&tab=chat" />
+                    <button type="submit" class="uh-status-toggle-btn uh-status-toggle--open">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                      Re-open
+                    </button>
+                  </form>
+                {% endif %}
+              {% endif %}
+              <a href="{% url 'core:property_detail' active_inquiry.property.pk %}" class="uh-property-view-btn" target="_blank">
+                View &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Message Area -->
+        <div
+          class="uh-chat-messages-area"
+          id="chat-thread"
+          data-messages-url="{% url 'core:inquiry_chat_messages' active_inquiry.pk %}"
+          data-mark-read-url="{% url 'core:api_mark_inquiry_read' active_inquiry.pk %}"
+          data-user-id="{{ request.user.id }}"
+          data-last-message-id="{{ latest_message_id }}"
+        >
+          {% for item in active_messages %}
+            {% if item.show_date_separator %}
+              <div class="uh-chat-date-separator" data-date-key="{{ item.date_key }}">
+                <span>{{ item.date_label }}</span>
+              </div>
+            {% endif %}
+            <div 
+              class="uh-message-row {% if item.sender_id == request.user.id %}uh-message-outgoing{% else %}uh-message-incoming{% endif %}"
+              data-message-id="{{ item.id }}"
+            >
+              {% if item.sender_id != request.user.id %}
+                <div class="uh-message-avatar">
+                  {% if item.sender.avatar %}
+                    <img src="{{ item.sender.avatar.url }}" alt="{{ item.sender.username }}" />
+                  {% else %}
+                    {{ item.sender.username|first|upper }}
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <div class="uh-message-bubble">
+                <p class="uh-message-text">{{ item.message }}</p>
+                <div class="uh-message-meta">
+                  <span class="uh-message-time">{{ item.created_at|date:"g:i A" }}</span>
+                  {% if item.sender_id == request.user.id %}
+                    <span class="uh-message-ticks">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{% if item.read_at %}#34B7F1{% else %}#1B5E20{% endif %}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline><polyline points="22 10 13 19 11 17"></polyline></svg>
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center text-secondary my-auto py-5" id="chat-empty-state">
+              Start the conversation. Send your message below!
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- 4. Fixed Bottom Message Composer Bar -->
+        <form method="post" class="uh-chat-composer-form" id="chat-form">
+          {% csrf_token %}
+          {% if active_inquiry.property.status != 'available' %}
+            <div class="alert alert-warning py-2 px-3 mb-2 w-100 rounded-3 small" role="alert">
+              <strong>⚠️ Property {{ active_inquiry.property.get_status_display }}</strong> — This property is currently not available for new messages.
+            </div>
+          {% endif %}
+
+          <div class="uh-chat-composer-inner">
+            <textarea
+              id="id_message"
+              name="message"
+              rows="1"
+              class="uh-chat-input"
+              {% if active_inquiry.property.status != 'available' %}disabled{% endif %}
+              required
+              placeholder="Type a message..."
+            ></textarea>
+
+            <button type="submit" class="uh-chat-send-btn" id="chat-submit" {% if active_inquiry.property.status != 'available' %}disabled{% endif %}>
+              Send
+            </button>
+          </div>
+        </form>
+      {% else %}
+        <!-- Empty State when no conversation selected -->
+        <div class="uh-chat-empty-panel">
+          <div class="uh-chat-empty-content text-center">
+            <div class="uh-chat-empty-logo-box">
+              <img src="/media/logo/logo.png" alt="Urban Hunt" />
+            </div>
+            <h2 class="uh-chat-empty-title">Your conversations</h2>
+            <p class="uh-chat-empty-desc">{% if request.user.role == 'seller' %}Select a buyer inquiry to start messaging.{% else %}Select a property conversation to start chatting with its owner.{% endif %}</p>
+            {% if request.user.role == 'buyer' %}
+              <a href="{% url 'core:property_list' %}" class="btn btn-dark px-4 rounded-pill">Explore Properties</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </main>
+  </div>
+
+{% elif request.user.role == 'seller' %}
+  <!-- SELLER WORKSPACE -->
+  <div class="seller-dashboard-wrapper" style="margin-top: 100px; padding: 40px 20px; max-width: 1200px; margin-left: auto; margin-right: auto;">
+    
+    <!-- Header Section -->
+    <div style="margin-bottom: 50px; padding-bottom: 30px; border-bottom: 1px solid #E7E7E7; display: flex; justify-content: space-between; align-items: flex-start; gap: 30px;">
+      <div>
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #666; text-transform: uppercase; margin-bottom: 12px;">SELLER WORKSPACE</div>
+        <h1 style="font-size: 36px; font-weight: 700; color: #111111; margin: 0 0 8px 0; line-height: 1.2;">Seller Portfolio</h1>
+        <p style="font-size: 15px; color: #666666; margin: 0; line-height: 1.5;">List properties, manage your portfolio, and keep your listings up to date.</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="{% url 'core:dashboard' %}?tab=listings" style="padding: 10px 18px; background: #111111; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer;">Manage Listings</a>
+        <a href="{% url 'core:dashboard' %}?tab=chat" style="padding: 10px 18px; background: white; color: #111111; border: 1px solid #E7E7E7; border-radius: 4px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer;">Buyer Messages</a>
+      </div>
+    </div>
+
+    <!-- Add Property Form -->
+    <div style="background: white; border: 1px solid #E7E7E7; border-radius: 6px; padding: 50px; margin-bottom: 50px;">
+      <h2 style="font-size: 22px; font-weight: 700; color: #111111; margin: 0 0 30px 0;">Add New Property Listing</h2>
+      <p style="font-size: 14px; color: #666666; margin: 0 0 30px 0;">Fill in the details below to create a property listing for buyers.</p>
+      
+      <form method="post" enctype="multipart/form-data" id="property-form">
+        {% csrf_token %}
+        
+        <!-- Row 1: Title & Price -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.title.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Price (₹)</label>
+            {{ form.price }}
+            {% if form.price.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.price.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- Row 2: Location & Type Toggle -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Location / Area</label>
+            {{ form.location }}
+            {% if form.location.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.location.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Type</label>
+            <div class="property-type-toggle" style="display: flex; gap: 8px;">
+              <button type="button" class="toggle-btn sell-btn" data-value="sell" style="flex: 1; padding: 10px 20px; background: #111111; color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 20px; max-width: 80px;">Sell</button>
+              <button type="button" class="toggle-btn rent-btn" data-value="rent" style="flex: 1; padding: 10px 20px; background: white; color: #111111; border: 1px solid #E7E7E7; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 20px; max-width: 80px;">Rent</button>
+            </div>
+            <input type="hidden" id="property_type_hidden" name="property_type" value="{{ form.property_type.value|default:'sell' }}" />
+            {% if form.property_type.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.property_type.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- Row 3: Description -->
+        <div style="margin-bottom: 25px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Description</label>
+          {{ form.description }}
+          {% if form.description.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.description.errors }}</div>{% endif %}
+        </div>
+
+        <!-- Row 4: Amenities -->
+        <div style="margin-bottom: 25px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Amenities (One per line)</label>
+          {{ form.amenities }}
+          {% if form.amenities.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.amenities.errors }}</div>{% endif %}
+        </div>
+
+        <!-- Row 5: Images & Documents -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Images</label>
+            {{ form.image }}
+            {% if form.image.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.image.errors }}</div>{% endif %}
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Documents (PDF/Doc)</label>
+            {{ form.documents }}
+            {% if form.documents.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.documents.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" style="padding: 12px 28px; background: #111111; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Create Property Listing →</button>
+      </form>
+    </div>
+
+    <!-- Listed Properties Section -->
+    <div style="background: white; border: 1px solid #E7E7E7; border-radius: 6px; overflow: hidden;">
+      <div style="padding: 40px; border-bottom: 1px solid #E7E7E7;">
+        <h2 style="font-size: 22px; font-weight: 700; color: #111111; margin: 0;">Your Listed Properties</h2>
+      </div>
+      
+      {% if properties %}
+        <div style="padding: 20px;">
+          {% for property in properties %}
+            <div style="display: grid; grid-template-columns: 80px 1fr auto; gap: 20px; align-items: center; padding: 20px; border: 1px solid #E7E7E7; border-radius: 6px; margin-bottom: 16px; transition: all 0.3s; background: white;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'; this.style.borderColor='#D0D0D0';" onmouseout="this.style.boxShadow='none'; this.style.borderColor='#E7E7E7';">
+              
+              <!-- Property Image -->
+              <div style="width: 80px; height: 80px; border-radius: 6px; overflow: hidden; background: #F0F0F0; flex-shrink: 0;">
+                {% if property.image %}
+                  <img src="{{ property.image.url }}" alt="{{ property.title }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                {% else %}
+                  <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #E7E7E7; color: #999; font-weight: 700; font-size: 24px;">{{ property.title|first|upper }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Property Details -->
+              <div>
+                <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 8px;">
+                  <div style="flex: 1;">
+                    <a href="{% url 'core:property_detail' property.pk %}" style="color: #111111; text-decoration: none; font-weight: 700; font-size: 15px; display: block; margin-bottom: 4px;">{{ property.title }}</a>
+                    <div style="color: #666666; font-size: 12px; line-height: 1.4;">{{ property.location }}</div>
+                  </div>
+                </div>
+                
+                <!-- Badges Row -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <span style="display: inline-block; padding: 4px 10px; background: #F0F0F0; color: #666666; border-radius: 4px; font-size: 12px; font-weight: 600;">{{ property.get_property_type_display }}</span>
+                  <span style="display: inline-block; padding: 4px 10px; background: #F0F0F0; color: #111111; border-radius: 4px; font-size: 12px; font-weight: 600;">₹{{ property.price|floatformat:0 }}</span>
+                  <span style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; {% if property.status == 'available' %}background: #E8F5E9; color: #1B5E20;{% elif property.status == 'sold' %}background: #FFEBEE; color: #B71C1C;{% elif property.status == 'rented' %}background: #FFF3E0; color: #E65100;{% else %}background: #F5F5F5; color: #666;{% endif %}">{{ property.get_status_display }}</span>
+                  <span style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; {% if property.is_verified %}background: #E8F5E9; color: #1B5E20;{% else %}background: #FFF3E0; color: #E65100;{% endif %}">{% if property.is_verified %}Approved{% else %}Pending{% endif %}</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div style="display: flex; gap: 8px; flex-direction: column;">
+                <div style="display: flex; gap: 8px;">
+                  <a href="{% url 'core:edit_property' property.pk %}" style="padding: 8px 16px; background: #111111; color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; display: inline-block; text-align: center;" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#111111'">Edit</a>
+                  <form method="post" action="{% url 'core:delete_property' property.pk %}" style="display: inline;" onsubmit="return confirm('Delete this property?')">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 8px 16px; background: white; color: #d32f2f; border: 1px solid #d32f2f; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-block;" onmouseover="this.style.background='#ffebee'" onmouseout="this.style.background='white'">Delete</button>
+                  </form>
+                </div>
+                {% if property.status == 'available' %}
+                  <form method="post" action="{% url 'core:update_property_status' property.pk %}" style="display: inline;" onsubmit="return handleStatusUpdate(event)">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="{% if property.property_type == 'sell' %}sold{% else %}rented{% endif %}" />
+                    <button type="submit" style="padding: 8px 16px; background: white; color: #111111; border: 1px solid #E7E7E7; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%;" onmouseover="this.style.background='#F5F5F5'; this.style.borderColor='#111111'" onmouseout="this.style.background='white'; this.style.borderColor='#E7E7E7'">Mark {% if property.property_type == 'sell' %}Sold{% else %}Rented{% endif %}</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'core:update_property_status' property.pk %}" style="display: inline;" onsubmit="return handleStatusUpdate(event)">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="available" />
+                    <button type="submit" style="padding: 8px 16px; background: white; color: #1B5E20; border: 1px solid #1B5E20; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%;" onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='white'">Mark Available</button>
+                  </form>
+                {% endif %}
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="padding: 60px 40px; text-align: center; color: #999;">
+          <p style="font-size: 15px; margin: 0;">No properties added yet. Create your first listing to get started!</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <style>
+    /* Form inputs styling */
+    #property-form input[type="text"],
+    #property-form input[type="number"],
+    #property-form input[type="file"],
+    #property-form select,
+    #property-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #E7E7E7;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #333;
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+
+    #property-form input[type="text"]:focus,
+    #property-form input[type="number"]:focus,
+    #property-form input[type="file"]:focus,
+    #property-form select:focus,
+    #property-form textarea:focus {
+      outline: none;
+      border-color: #111111;
+      box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.1);
+    }
+
+    #property-form textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Toggle buttons */
+    .toggle-btn {
+      transition: all 0.2s;
+    }
+
+    .toggle-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .seller-dashboard-wrapper {
+        margin-top: 90px !important;
+        padding: 25px 15px !important;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 12px 10px !important;
+      }
+
+      [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .seller-dashboard-wrapper {
+        margin-top: 85px !important;
+        padding: 20px 12px !important;
+      }
+
+      h1 {
+        font-size: 28px !important;
+      }
+
+      h2 {
+        font-size: 18px !important;
+      }
+
+      [style*="flex; gap: 10px"] {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+
+      [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+  <script>
+    // Property type toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleButtons = document.querySelectorAll('.toggle-btn');
+      const hiddenInput = document.getElementById('property_type_hidden');
+      const currentValue = hiddenInput.value || 'sell';
+      
+      // Set initial state
+      if (currentValue === 'rent') {
+        document.querySelector('.rent-btn').style.background = '#111111';
+        document.querySelector('.rent-btn').style.color = 'white';
+        document.querySelector('.sell-btn').style.background = 'white';
+        document.querySelector('.sell-btn').style.color = '#111111';
+      }
+
+      toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const value = this.dataset.value;
+          hiddenInput.value = value;
+
+          // Update button states
+          document.querySelectorAll('.toggle-btn').forEach(b => {
+            if (b.dataset.value === value) {
+              b.style.background = '#111111';
+              b.style.color = 'white';
+            } else {
+              b.style.background = 'white';
+              b.style.color = '#111111';
+            }
+          });
+        });
+      });
+    });
+
+    function handleStatusUpdate(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      })
+      .catch(err => console.error(err));
+      return false;
+    }
+  </script>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if active_inquiry %}
+<script>
+  (() => {
+    const form = document.getElementById("chat-form");
+    const thread = document.getElementById("chat-thread");
+    const input = document.getElementById("id_message");
+    const submitButton = document.getElementById("chat-submit");
+    if (!form || !thread || !input) return;
+
+    const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+    const messagesUrl = thread.dataset.messagesUrl;
+    const markReadUrl = thread.dataset.markReadUrl;
+    const currentUserId = Number(thread.dataset.userId);
+    let lastMessageId = Number(thread.dataset.lastMessageId || "0");
+    let isSending = false;
+    let pollHandle = null;
+
+    async function markMessagesAsRead() {
+      try {
+        const response = await fetch(markReadUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'success') {
+            updateNotificationBell(data.unread_count);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to mark messages as read:', error);
+      }
+    }
+
+    function updateNotificationBell(unreadCount) {
+      const bellButtons = document.querySelectorAll('.notification-bell-btn');
+      bellButtons.forEach(bellButton => {
+        const badge = bellButton.querySelector('.notification-count');
+        if (unreadCount > 0) {
+          if (badge) {
+            badge.textContent = unreadCount;
+          } else {
+            const newBadge = document.createElement('span');
+            newBadge.className = 'notification-count';
+            newBadge.textContent = unreadCount;
+            bellButton.appendChild(newBadge);
+          }
+        } else if (badge) {
+          badge.remove();
+        }
+      });
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function scrollToBottom(force = false) {
+      const nearBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 140;
+      if (force || nearBottom) {
+        thread.scrollTop = thread.scrollHeight;
+      }
+    }
+
+    function removeEmptyState() {
+      const emptyState = document.getElementById("chat-empty-state");
+      if (emptyState) emptyState.remove();
+    }
+
+    function addDateSeparator(message) {
+      if (!message.date_key || thread.querySelector(`[data-date-key="${message.date_key}"]`)) return;
+      const separator = document.createElement("div");
+      separator.className = "uh-chat-date-separator";
+      separator.dataset.dateKey = message.date_key;
+      separator.innerHTML = `<span>${escapeHtml(message.date_label || message.date_key)}</span>`;
+      thread.appendChild(separator);
+    }
+
+    function buildMessageNode(message) {
+      const div = document.createElement("div");
+      const isOutgoing = message.sender_id === currentUserId;
+      div.className = `uh-message-row ${isOutgoing ? "uh-message-outgoing" : "uh-message-incoming"}`;
+      div.dataset.messageId = String(message.id);
+      
+      let avatarHtml = "";
+      if (!isOutgoing) {
+        avatarHtml = `
+          <div class="uh-message-avatar">
+            ${message.sender_avatar ? `<img src="${message.sender_avatar}" alt="${escapeHtml(message.sender_name)}" />` : escapeHtml(message.sender_name.charAt(0).toUpperCase())}
+          </div>
+        `;
+      }
+
+      let ticksHtml = "";
+      if (isOutgoing) {
+        ticksHtml = `
+          <span class="uh-message-ticks">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${message.is_seen ? "#34B7F1" : "#1B5E20"}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline><polyline points="22 10 13 19 11 17"></polyline></svg>
+          </span>
+        `;
+      }
+
+      div.innerHTML = `
+        ${avatarHtml}
+        <div class="uh-message-bubble">
+          <p class="uh-message-text">${escapeHtml(message.message).replace(/\n/g, "<br>")}</p>
+          <div class="uh-message-meta">
+            <span class="uh-message-time">${escapeHtml(message.created_at_time_label || message.created_at_label || "")}</span>
+            ${ticksHtml}
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function updateSeenMessages(messageIds) {
+      for (const messageId of messageIds || []) {
+        const message = thread.querySelector(`[data-message-id="${messageId}"]`);
+        const ticks = message && message.querySelector(".uh-message-ticks svg");
+        if (ticks) ticks.setAttribute("stroke", "#34B7F1");
+      }
+    }
+
+    function appendMessage(message, options = {}) {
+      if (thread.querySelector(`[data-message-id="${message.id}"]`)) return;
+      removeEmptyState();
+      addDateSeparator(message);
+      thread.appendChild(buildMessageNode(message));
+      lastMessageId = Math.max(lastMessageId, Number(message.id));
+      thread.dataset.lastMessageId = String(lastMessageId);
+      scrollToBottom(Boolean(options.forceScroll || message.sender_id === currentUserId));
+    }
+
+    async function fetchMessages() {
+      try {
+        const response = await fetch(`${messagesUrl}?since_id=${lastMessageId}`, {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        for (const message of payload.messages) {
+          appendMessage(message);
+        }
+        updateSeenMessages(payload.seen_message_ids);
+      } catch (error) {
+        console.error("Failed to refresh chat messages", error);
+      }
+    }
+
+    async function sendMessage(messageText) {
+      if (isSending) return;
+      isSending = true;
+      if (submitButton) submitButton.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append("message", messageText);
+
+        const response = await fetch(messagesUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: formData,
+        });
+
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Unable to send message.");
+
+        appendMessage(payload.message, { forceScroll: true });
+        input.value = "";
+        input.style.height = "auto";
+        input.focus();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        isSending = false;
+        if (submitButton) submitButton.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const messageText = input.value.trim();
+      if (!messageText) return;
+      await sendMessage(messageText);
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    scrollToBottom(true);
+    markMessagesAsRead();
+    pollHandle = window.setInterval(fetchMessages, 3000);
+    window.addEventListener("beforeunload", () => {
+      if (pollHandle) window.clearInterval(pollHandle);
+    });
+  })();
+</script>
+{% endif %}
+
+<script>
+  function filterConversations() {
+    const query = (document.getElementById("chatSearchInput")?.value || "").toLowerCase().trim();
+    const items = document.querySelectorAll("#conversationList .uh-chat-item");
+    items.forEach(item => {
+      const term = item.dataset.searchTerm || "";
+      if (!query || term.includes(query)) {
+        item.style.display = "flex";
+      } else {
+        item.style.display = "none";
+      }
+    });
+  }
+
+  function handleStatusUpdate(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showNotification('Property status updated successfully!', 'success');
+        setTimeout(() => location.reload(), 500);
+      } else {
+        showNotification('Failed to update status', 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showNotification('An error occurred', 'error');
+    });
+    return false;
+  }
+
+  function handleDeleteProperty(event) {
+    event.preventDefault();
+    if (!confirm('Are you sure you want to delete this property listing?')) {
+      return false;
+    }
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showNotification('Property deleted successfully!', 'success');
+        const row = form.closest('tr');
+        if (row) row.remove();
+      } else {
+        showNotification('Failed to delete property', 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showNotification('An error occurred', 'error');
+    });
+    return false;
+  }
+
+  function handlePropertyCreation(event) {
+    event.preventDefault();
+    const form = document.getElementById('property-creation-form');
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showNotification('Property created successfully!', 'success');
+        setTimeout(() => location.reload(), 600);
+      } else {
+        if (data.errors) {
+          const msg = Object.values(data.errors).flat().join(', ');
+          showNotification(msg, 'error');
+        } else {
+          showNotification('Failed to create property', 'error');
+        }
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showNotification('An error occurred', 'error');
+    });
+    return false;
+  }
+</script>
+{% endblock %}

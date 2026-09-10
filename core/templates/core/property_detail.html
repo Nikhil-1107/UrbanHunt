@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ property.title }} | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="container-xxl py-4 py-lg-5">
+  <!-- Breadcrumbs -->
+  <nav class="detail-breadcrumb" aria-label="breadcrumb">
+    <ol class="breadcrumb mb-3">
+      <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'core:property_list' %}">Properties</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ property.title|truncatechars:35 }}</li>
+    </ol>
+  </nav>
+
+<!-- Header Row -->
+<div class="detail-header">
+  <div class="detail-title-group">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      {% if property.property_type == 'sell' %}
+        <span class="badge-resideo badge-sell">For Sale</span>
+      {% else %}
+        <span class="badge-resideo badge-rent">For Rent</span>
+      {% endif %}
+
+      {% if property.is_verified %}
+        <span class="badge-resideo badge-verified">Verified</span>
+      {% endif %}
+
+      <span class="status-badge status-badge--{{ property.status }}">
+        {{ property.get_status_display }}
+      </span>
+    </div>
+
+    <h1>{{ property.title }}</h1>
+    <div class="detail-location-meta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      {{ property.location }}
+    </div>
+  </div>
+
+  <div class="detail-price-box">
+    <div class="detail-price-value">₹{{ property.price }}</div>
+    <div class="d-flex align-items-center gap-2 mt-2">
+      <div class="uh-listed-avatar" style="width: 32px; height: 32px; min-width: 32px; font-size: 0.75rem; border-width: 1.5px;">
+        {% if property.seller.avatar %}
+          <img src="{{ property.seller.avatar.url }}" alt="{{ property.seller.username }}" />
+        {% else %}
+          {{ property.seller.username|first|upper }}
+        {% endif %}
+      </div>
+      <div style="font-size: 0.88rem; color: #64748B; font-family: 'Manrope', sans-serif;">
+        Listed by <strong style="color: #0F1729; font-weight: 700;">{{ property.seller.get_full_name|default:property.seller.username }}</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Media Gallery Hero -->
+<div class="detail-gallery-main">
+  {% if property.image %}
+    <img src="{{ property.image.url }}" alt="{{ property.title }}" />
+  {% else %}
+    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-secondary fs-4 fw-bold">
+      Urban Hunt Property Showcase
+    </div>
+  {% endif %}
+</div>
+
+<!-- 2-Column Content Layout -->
+<div class="row g-4">
+  <!-- Left Column: Details & Map -->
+  <div class="col-12 col-lg-8">
+    <!-- Description Card -->
+    <div class="detail-section-card">
+      <h2>About Property</h2>
+      <p class="text-secondary style-body mb-0" style="white-space: pre-line;">{{ property.description }}</p>
+    </div>
+
+    <!-- Features & Amenities Card -->
+    <div class="detail-section-card">
+      <h2>Features & Amenities</h2>
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-md-4">
+          <div class="p-3 bg-light rounded-3">
+            <span class="text-secondary small d-block">Listing Type</span>
+            <strong class="text-dark">{{ property.get_property_type_display }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="p-3 bg-light rounded-3">
+            <span class="text-secondary small d-block">Status</span>
+            <strong class="text-dark">{{ property.get_status_display }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="p-3 bg-light rounded-3">
+            <span class="text-secondary small d-block">Verification</span>
+            <strong class="{% if property.is_verified %}text-success{% else %}text-warning{% endif %}">
+              {% if property.is_verified %}Approved{% else %}Pending Review{% endif %}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      {% if property.amenities %}
+        <h3 class="h6 font-weight-bold mb-2">Key Amenities</h3>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% for amenity in property.amenities.splitlines %}
+            {% if amenity.strip %}
+              <span class="badge bg-light text-dark border px-3 py-2 fw-medium">{{ amenity.strip }}</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if property.documents %}
+        <div class="mt-4 pt-3 border-top">
+          <h3 class="h6 font-weight-bold mb-2">Property Documents</h3>
+          <a href="{{ property.documents.url }}" class="btn btn-outline-secondary btn-sm" download>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download Documents
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Location Map Card -->
+    <div class="detail-section-card">
+      <h2>Location Map</h2>
+      <p class="text-secondary small mb-3">Approximate location for {{ property.location }}</p>
+      <div class="map-container">
+        <iframe
+          src="https://maps.google.com/maps?q={{ property.location|urlencode }}&t=&z=13&ie=UTF8&iwloc=&output=embed"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Sidebar Actions & Seller Card -->
+  <div class="col-12 col-lg-4">
+    <div class="detail-sidebar-card">
+      <!-- Seller Info Block -->
+      <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <div class="seller-avatar-large m-0" style="width: 54px; height: 54px; font-size: 1.2rem;">
+          {% if property.seller.avatar %}
+            <img src="{{ property.seller.avatar.url }}" alt="{{ property.seller.username }}" />
+          {% else %}
+            {{ property.seller.username|first|upper }}
+          {% endif %}
+        </div>
+        <div>
+          <span class="eyebrow mb-0">PROPERTY OWNER</span>
+          <h3 class="h5 mb-0 fw-bold">{{ property.seller.username }}</h3>
+          <span class="text-secondary small">Verified Seller Account</span>
+        </div>
+      </div>
+
+      <!-- Property Availability Banner -->
+      {% if property.status != 'available' %}
+        <div class="alert alert-warning mb-4 rounded-3" role="alert">
+          <strong>Property {{ property.get_status_display }}</strong><br />
+          This property is currently not available for new inquiries or purchasing.
+        </div>
+      {% endif %}
+
+      <!-- Primary Action Buttons for Buyer -->
+      {% if request.user.is_authenticated %}
+        {% if request.user.role == 'buyer' %}
+          <div class="d-grid mb-4">
+            <button
+              type="button"
+              class="btn btn-outline-secondary w-100 py-2 d-flex align-items-center justify-content-center gap-2"
+              id="savePropertyBtn"
+              onclick="handleSaveToggle()"
+              style="font-family: 'Manrope', sans-serif; font-weight: 700; border-radius: 8px; transition: all 0.25s ease;"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" id="saveBtnSvg" fill="{% if is_saved %}#1B5E20{% else %}none{% endif %}" stroke="#1B5E20" stroke-width="2">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              <span id="saveBtnText">{% if is_saved %}Saved{% else %}Save Property{% endif %}</span>
+            </button>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="bg-light p-3 rounded-3 mb-4 text-center">
+          <p class="small text-secondary mb-2">Sign in as a buyer to save listings or contact the seller.</p>
+          <a href="{% url 'core:login' %}?next={{ request.path }}" class="btn btn-dark btn-sm w-100">Sign In to Inquiry</a>
+        </div>
+      {% endif %}
+
+      <!-- Inquiry Form Block -->
+      {% if request.user.is_authenticated and request.user.role == 'buyer' and property.status == 'available' %}
+        <div class="border-top pt-4">
+          <h3 class="h6 fw-bold mb-2">Send Inquiry to Owner</h3>
+          <p class="text-secondary small mb-3">Ask questions or request a home viewing directly.</p>
+          <form method="post" action="{% url 'core:contact_seller' property.pk %}" id="inquiryForm">
+            {% csrf_token %}
+            <div class="mb-3">
+              <textarea
+                name="message"
+                id="inquiryMessage"
+                class="form-control"
+                rows="3"
+                placeholder="Hi {{ property.seller.username }}, I am interested in {{ property.title }}..."
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-accent w-100 py-2" id="inquirySubmitBtn">
+              Send Message
+            </button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const csrfToken = '{{ csrf_token }}';
+  const propertyId = {{ property.pk }};
+
+  // Toggle Save Property
+  async function handleSaveToggle() {
+    const btnSvg = document.getElementById('saveBtnSvg');
+    const btnText = document.getElementById('saveBtnText');
+    if (!btnSvg || !btnText) return;
+
+    const wasSaved = btnSvg.getAttribute('fill') === '#1B5E20';
+    if (wasSaved) {
+      btnSvg.setAttribute('fill', 'none');
+      btnText.textContent = 'Save Property';
+    } else {
+      btnSvg.setAttribute('fill', '#1B5E20');
+      btnText.textContent = 'Saved';
+    }
+
+    try {
+      const response = await fetch(`/properties/${propertyId}/save/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        const isSaved = data.is_saved || data.action === 'saved';
+        if (isSaved) {
+          btnSvg.setAttribute('fill', '#1B5E20');
+          btnText.textContent = 'Saved';
+          showNotification(data.message || 'Property saved!', 'success');
+        } else {
+          btnSvg.setAttribute('fill', 'none');
+          btnText.textContent = 'Save Property';
+          showNotification(data.message || 'Removed from shortlist', 'success');
+        }
+      } else {
+        btnSvg.setAttribute('fill', wasSaved ? '#1B5E20' : 'none');
+        btnText.textContent = wasSaved ? 'Saved' : 'Save Property';
+        showNotification(data.message || 'Unable to update saved property', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      btnSvg.setAttribute('fill', wasSaved ? '#1B5E20' : 'none');
+      btnText.textContent = wasSaved ? 'Saved' : 'Save Property';
+      showNotification('An error occurred', 'error');
+    }
+  }
+</script>
+{% endblock %}

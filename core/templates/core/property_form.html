@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if is_delete %}Delete Property{% else %}Edit Property{% endif %} | Urban Hunt
+{% endblock %}
+
+{% block content %}
+<div style="padding: 40px 20px; max-width: 900px; margin: 0 auto; margin-top: 80px;">
+  
+  {% if is_delete %}
+    <!-- Delete Confirmation -->
+    <div style="text-align: center; margin-bottom: 50px;">
+      <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #d32f2f; text-transform: uppercase; margin-bottom: 12px;">WARNING</div>
+      <h1 style="font-size: 36px; font-weight: 700; color: #111111; margin: 0 0 12px 0;">Delete Property Listing</h1>
+      <p style="font-size: 15px; color: #666666; margin: 0;">Are you sure you want to permanently delete <strong>{{ property.title }}</strong>?</p>
+    </div>
+
+    <div style="background: #FFEBEE; border: 1px solid #FFCDD2; border-radius: 6px; padding: 16px; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">
+      <strong style="color: #B71C1C;">⚠️ This action cannot be undone.</strong> Once deleted, the property listing and associated buyer inquiries will be removed.
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 15px;">
+      <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" style="padding: 12px 32px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#b71c1c'" onmouseout="this.style.background='#d32f2f'">Delete Listing</button>
+      </form>
+      <a href="{% url 'core:dashboard' %}" style="padding: 12px 32px; background: white; color: #111111; border: 1px solid #E7E7E7; border-radius: 4px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; display: inline-block;" onmouseover="this.style.borderColor='#111111'; this.style.background='#F5F5F5'" onmouseout="this.style.borderColor='#E7E7E7'; this.style.background='white'">Cancel</a>
+    </div>
+
+  {% else %}
+    <!-- Edit Form -->
+    <div style="text-align: center; margin-bottom: 50px;">
+      <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #666; text-transform: uppercase; margin-bottom: 12px;">EDIT LISTING</div>
+      <h1 style="font-size: 36px; font-weight: 700; color: #111111; margin: 0 0 8px 0;">Edit Property Details</h1>
+      <p style="font-size: 15px; color: #666666; margin: 0;">Update information for {{ property.title }}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <!-- Row 1: Title & Price -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Title</label>
+          {{ form.title }}
+          {% if form.title.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.title.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Price (₹)</label>
+          {{ form.price }}
+          {% if form.price.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.price.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Row 2: Location & Type Toggle -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Location / Area</label>
+          {{ form.location }}
+          {% if form.location.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.location.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Type</label>
+          <div class="property-type-toggle" style="display: flex; gap: 8px;">
+            <button type="button" class="toggle-btn sell-btn" data-value="sell" style="flex: 1; padding: 10px 20px; background: #111111; color: white; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 20px; max-width: 80px;">Sell</button>
+            <button type="button" class="toggle-btn rent-btn" data-value="rent" style="flex: 1; padding: 10px 20px; background: white; color: #111111; border: 1px solid #E7E7E7; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: 20px; max-width: 80px;">Rent</button>
+          </div>
+          <input type="hidden" id="property_type_hidden" name="property_type" value="{{ form.property_type.value|default:'sell' }}" />
+          {% if form.property_type.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.property_type.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Row 3: Description -->
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.description.errors }}</div>{% endif %}
+      </div>
+
+      <!-- Row 4: Amenities -->
+      <div style="margin-bottom: 25px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Amenities (One per line)</label>
+        {{ form.amenities }}
+        {% if form.amenities.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.amenities.errors }}</div>{% endif %}
+      </div>
+
+      <!-- Row 5: Images & Documents -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 40px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Image</label>
+          {{ form.image }}
+          {% if form.image.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.image.errors }}</div>{% endif %}
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #111111; margin-bottom: 8px;">Property Documents (PDF/Doc)</label>
+          {{ form.documents }}
+          {% if form.documents.errors %}<div style="font-size: 12px; color: #d32f2f; margin-top: 4px;">{{ form.documents.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 30px; border-top: 1px solid #E7E7E7;">
+        <a href="{% url 'core:dashboard' %}" style="padding: 12px 28px; background: white; color: #111111; border: 1px solid #E7E7E7; border-radius: 4px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#111111'; this.style.background='#F5F5F5'" onmouseout="this.style.borderColor='#E7E7E7'; this.style.background='white'">Cancel</a>
+        <button type="submit" style="padding: 12px 28px; background: #111111; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#111111'">Save Changes</button>
+      </div>
+    </form>
+
+    <style>
+      form input[type="text"],
+      form input[type="number"],
+      form input[type="file"],
+      form select,
+      form textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E7E7E7;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #333;
+        background: white;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+      }
+
+      form input[type="text"]:focus,
+      form input[type="number"]:focus,
+      form input[type="file"]:focus,
+      form select:focus,
+      form textarea:focus {
+        outline: none;
+        border-color: #111111;
+        box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.1);
+      }
+
+      form textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      @media (max-width: 768px) {
+        [style*="grid-template-columns: 1fr 1fr"] {
+          grid-template-columns: 1fr !important;
+        }
+      }
+    </style>
+
+    <script>
+      // Property type toggle functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggleButtons = document.querySelectorAll('.toggle-btn');
+        const hiddenInput = document.getElementById('property_type_hidden');
+        const currentValue = hiddenInput.value || 'sell';
+        
+        // Set initial state
+        if (currentValue === 'rent') {
+          document.querySelector('.rent-btn').style.background = '#111111';
+          document.querySelector('.rent-btn').style.color = 'white';
+          document.querySelector('.sell-btn').style.background = 'white';
+          document.querySelector('.sell-btn').style.color = '#111111';
+        }
+
+        toggleButtons.forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const value = this.dataset.value;
+            hiddenInput.value = value;
+
+            // Update button states
+            document.querySelectorAll('.toggle-btn').forEach(b => {
+              if (b.dataset.value === value) {
+                b.style.background = '#111111';
+                b.style.color = 'white';
+              } else {
+                b.style.background = 'white';
+                b.style.color = '#111111';
+              }
+            });
+          });
+        });
+      });
+    </script>
+
+  {% endif %}
+</div>
+{% endblock %}

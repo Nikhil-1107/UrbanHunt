@@ -1,0 +1,33 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}Saved Property Detail{% endblock %}
+{% block breadcrumb %}<span class="breadcrumb-sep">›</span><a href="{% url 'core:admin_saved_properties' %}">Saved Properties</a><span class="breadcrumb-sep">›</span><span>#{{ saved_item.id }}</span>{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Saved Entry #{{ saved_item.id }}</h1>
+    <p class="page-subtitle">Saved property details for admin review.</p>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-card-header">
+    <span class="table-card-title">Saved Property Information</span>
+  </div>
+  <div class="table-wrapper">
+    <table class="admin-table">
+      <tbody>
+        <tr><th style="width:220px;">Buyer</th><td>{{ saved_item.buyer.username }}</td></tr>
+        <tr><th>Seller</th><td>{{ saved_item.property.seller.username }}</td></tr>
+        <tr><th>Property</th><td>{{ saved_item.property.title }}</td></tr>
+        <tr><th>Location</th><td>{{ saved_item.property.location }}</td></tr>
+        <tr><th>Type</th><td>{{ saved_item.property.get_property_type_display }}</td></tr>
+        <tr><th>Price</th><td>₹{{ saved_item.property.price|floatformat:0 }}</td></tr>
+        <tr><th>Verified</th><td>{% if saved_item.property.is_verified %}Yes{% else %}No{% endif %}</td></tr>
+        <tr><th>Saved On</th><td>{{ saved_item.created_at|date:"d M Y, h:i A" }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

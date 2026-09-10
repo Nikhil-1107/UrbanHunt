@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Sign In | Urban Hunt Portal{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="auth-container-shell admin-login-shell">
+  <div class="auth-card-modern">
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 52px; height: 52px; background: rgba(27, 94, 32, 0.12); color: #1B5E20;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <h1 class="auth-title">Admin Login </h1>
+    </div>
+
+    {% if success %}
+      <div class="alert alert-success py-2 px-3 small rounded-3 mb-3">{{ success }}</div>
+    {% endif %}
+    {% if error %}
+      <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="uh-login-form admin-login-form">
+      {% csrf_token %}
+      {% if next_url %}
+        <input name="next" type="hidden" value="{{ next_url }}" />
+      {% endif %}
+
+      <div class="uh-login-form-group">
+        <label for="id_login_id" class="uh-login-label">Username or Email Address</label>
+        <div class="uh-login-input-wrapper">
+          <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <input id="id_login_id" name="login_id" type="text" class="uh-login-input" value="{{ entered_login_id|default:'' }}" placeholder="Enter username or email address" required />
+        </div>
+      </div>
+
+      <div class="uh-login-form-group">
+        <label for="id_password" class="uh-login-label">Password</label>
+        <div class="uh-login-input-wrapper">
+          <svg class="uh-login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input id="id_password" name="password" type="password" class="uh-login-input" placeholder="Enter admin password" required />
+        </div>
+      </div>
+
+      <button type="submit" class="uh-login-btn-primary">Access Admin Panel</button>
+    </form>
+
+    <div class="text-center admin-login-home">
+
+      <a href="{% url 'core:home' %}" class="small d-inline-block fw-semibold">&larr; Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

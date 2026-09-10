@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Properties | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="container-xxl py-4 py-lg-5">
+  <!-- Page Header -->
+  <div class="bg-white border rounded-4 p-4 p-lg-5 mb-4">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <span class="eyebrow">YOUR SHORTLIST</span>
+      <h1 class="display-6 fw-bold mb-2">Saved Properties</h1>
+      <p class="text-secondary mb-0">
+        {% if can_save_properties %}
+          Review the properties you bookmarked and jump back into listings when you are ready.
+        {% else %}
+          Saving listings is available for buyer accounts.
+        {% endif %}
+      </p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+      <a href="{% url 'core:property_list' %}" class="btn btn-outline-dark">Browse More Properties</a>
+    </div>
+  </div>
+</div>
+
+<!-- Saved Property Cards Grid -->
+<div class="row g-4 mb-5">
+  {% for item in saved_items %}
+    <div class="col-12 col-md-6 col-lg-4" id="saved-card-col-{{ item.property.pk }}">
+      <article class="uh-property-card">
+        <a href="{% url 'core:property_detail' item.property.pk %}" class="uh-card-link-wrapper" aria-label="{{ item.property.title }}">
+          <div class="uh-card-media-wrapper">
+            {% if item.property.image %}
+              <img src="{{ item.property.image.url }}" alt="{{ item.property.title }}" class="uh-card-img" loading="lazy" />
+            {% else %}
+              <div class="uh-card-media-placeholder">
+                <span>Urban Hunt</span>
+              </div>
+            {% endif %}
+
+            <!-- Dark transparent gradient overlay at bottom -->
+            <div class="uh-card-gradient-overlay"></div>
+
+            <!-- Badges overlay -->
+            <div class="uh-card-badges-left">
+              {% if item.property.property_type == 'sell' %}
+                <span class="uh-badge uh-badge-sell">For Sale</span>
+              {% else %}
+                <span class="uh-badge uh-badge-rent">For Rent</span>
+              {% endif %}
+
+              {% if item.property.is_verified %}
+                <span class="uh-badge uh-badge-verified">Verified</span>
+              {% endif %}
+            </div>
+
+            <!-- Remove Button in top right -->
+            <button
+              type="button"
+              class="uh-card-fav-btn saved"
+              title="Remove from shortlist"
+              aria-label="Remove from shortlist"
+              onclick="event.preventDefault(); event.stopPropagation(); removeSavedProperty({{ item.property.pk }})"
+            >
+              <svg viewBox="0 0 24 24" class="uh-heart-icon"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+
+            <!-- Property Overlay Details -->
+            <div class="uh-card-overlay-content">
+              <div class="uh-card-seller-inline">
+                <div class="uh-seller-inline-avatar">
+                  {% if item.property.seller.avatar %}
+                    <img src="{{ item.property.seller.avatar.url }}" alt="{{ item.property.seller.username }}" />
+                  {% else %}
+                    {{ item.property.seller.username|first|upper }}
+                  {% endif %}
+                </div>
+                <div class="uh-seller-inline-info">
+                  <span class="uh-seller-inline-label">Listed by</span>
+                  <span class="uh-seller-inline-name">{{ item.property.seller.get_full_name|default:item.property.seller.username }}</span>
+                </div>
+              </div>
+              <h3 class="uh-card-title">{{ item.property.title }}</h3>
+              <div class="uh-card-price">
+                {% if '₹' in item.property.price %}{{ item.property.price }}{% else %}₹{{ item.property.price }}{% endif %}{% if item.property.property_type == 'rent' and '/mo' not in item.property.price and 'mo' not in item.property.price %}<span class="uh-price-period">/mo</span>{% endif %}
+              </div>
+              <div class="uh-card-specs">
+                <span class="uh-spec-location">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px; vertical-align: -1px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5-2.5-1.12 2.5-2.5-2.5 2.5z"/></svg>
+                  {{ item.property.location }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </article>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="bg-white border rounded-4 p-5 text-center my-4">
+        <h2 class="h4 mb-2">No saved properties yet</h2>
+        <p class="text-secondary mb-4">Start exploring listings and click the heart icon to save homes for quick access later.</p>
+        <a href="{% url 'core:property_list' %}" class="btn btn-accent px-4">Browse Properties</a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const csrfToken = '{{ csrf_token }}';
+
+  async function removeSavedProperty(propertyId) {
+    const col = document.getElementById(`saved-card-col-${propertyId}`);
+    try {
+      const response = await fetch(`/properties/${propertyId}/save/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        if (col) {
+          col.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          col.style.opacity = '0';
+          col.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            col.remove();
+            showNotification(data.message || 'Removed from saved properties', 'success');
+            if (document.querySelectorAll('.property-card-resideo').length === 0) {
+              location.reload();
+            }
+          }, 300);
+        }
+      } else {
+        showNotification('Unable to remove property', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification('An error occurred', 'error');
+    }
+  }
+</script>
+{% endblock %}

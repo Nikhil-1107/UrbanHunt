@@ -1,0 +1,44 @@
+{% extends "admin_panel/base.html" %}
+{% block title %}Edit User{% endblock %}
+{% block breadcrumb %}<span class="breadcrumb-sep">/</span><a href="{% url 'core:admin_users' %}" class="add-user-breadcrumb-link">Users</a><span class="breadcrumb-sep">/</span><span>Edit User</span>{% endblock %}
+{% block content %}
+<div class="add-user-page edit-user-page">
+  <section class="add-user-heading"><div><span class="section-kicker">USER MANAGEMENT</span><h1 class="page-title">Edit User</h1><p class="page-subtitle">Update account details for {{ user_obj.username }}.</p></div><a href="{% url 'core:admin_users' %}" class="add-user-back"><svg viewBox="0 0 24 24"><path d="m11 5-7 7 7 7 1.4-1.4L7.8 13H20v-2H7.8l4.6-4.6L11 5z"/></svg><span>Back to Users</span></a></section>
+  <section class="add-user-card">
+    <div class="add-user-card-header"><span class="add-user-eyebrow"><i></i>ACCOUNT DETAILS</span><h2>User Information</h2><p>Update the account details and access settings for this user.</p></div>
+    <form method="post" class="add-user-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="add-user-grid">
+        <div class="add-user-field"><label for="id_username"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.3 0-6 1.7-6 4v2h12v-2c0-2.3-2.7-4-6-4z"/></svg>Username</label><div class="add-user-input">{{ form.username }}</div>{{ form.username.errors }}</div>
+        <div class="add-user-field"><label for="id_email"><svg viewBox="0 0 24 24"><path d="M3 5h18v14H3V5zm2 2v.5l7 4.4 7-4.4V7l-7 4.4L5 7z"/></svg>Email Address</label><div class="add-user-input">{{ form.email }}</div>{{ form.email.errors }}</div>
+        <div class="add-user-field"><label for="id_mobile_no"><svg viewBox="0 0 24 24"><path d="M6.6 2h3.1l1.4 5-2.2 1.8a15.2 15.2 0 0 0 6.3 6.3l1.8-2.2 5 1.4v3.1c0 1.1-.9 2-2 2C11.7 19.4 4.6 12.3 4.6 4c0-1.1.9-2 2-2z"/></svg>Mobile Number</label><div class="add-user-phone"><select name="country_code" id="admin-country-code" aria-label="Country code"><option value="+91">India (+91)</option><option value="+1">United States (+1)</option><option value="+44">United Kingdom (+44)</option><option value="+61">Australia (+61)</option><option value="+971">UAE (+971)</option><option value="+65">Singapore (+65)</option><option value="+81">Japan (+81)</option><option value="+86">China (+86)</option></select>{{ form.mobile_no }}</div>{{ form.mobile_no.errors }}</div>
+        <div class="add-user-field"><label for="id_role"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v5c0 5.5 3.8 9.9 9 11 5.2-1.1 9-5.5 9-11V6l-9-4zm0 4.2 5 2.2v2.6c0 3.7-2.3 6.9-5 7.9-2.7-1-5-4.2-5-7.9V8.4l5-2.2z"/></svg>Role</label><div class="add-user-input add-user-select">{{ form.role }}</div>{{ form.role.errors }}</div>
+        <div class="add-user-field"><label for="id_password1"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h2v11H5V10h2zm2 0h6V7a3 3 0 0 0-6 0v3z"/></svg>New Password</label><div class="add-user-input add-user-password">{{ form.password1 }}<button type="button" data-password-toggle="id_password1" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12zm10 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></button></div>{{ form.password1.errors }}</div>
+        <div class="add-user-field"><label for="id_password2"><svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h2v11H5V10h2zm2 0h6V7a3 3 0 0 0-6 0v3z"/></svg>Confirm New Password</label><div class="add-user-input add-user-password">{{ form.password2 }}<button type="button" data-password-toggle="id_password2" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12zm10 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg></button></div>{{ form.password2.errors }}</div>
+      </div>
+      <div class="add-user-password-note"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v5c0 5.5 3.8 9.9 9 11 5.2-1.1 9-5.5 9-11V6l-9-4zm-1 14-3-3 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6z"/></svg><div><strong>Password requirements</strong><span>Leave both password fields empty to keep the current password.</span></div></div>
+      <div class="add-user-status"><label class="add-user-switch">{{ form.is_active }}<span></span></label><div><strong>Active Account</strong><small>This user will be able to access the platform.</small></div></div>
+      <div class="add-user-actions"><a href="{% url 'core:admin_users' %}" class="add-user-cancel">Cancel</a><button type="submit" class="add-user-submit"><span>Save Changes</span><svg viewBox="0 0 24 24"><path d="M5 11h10.2l-4.6-4.6L12 5l7 7-7 7-1.4-1.4 4.6-4.6H5v-2z"/></svg></button></div>
+    </form>
+  </section>
+</div>
+<script>
+  window.addEventListener('load', function () {
+    const legacyCountry = document.getElementById('admin-country-code');
+    if (legacyCountry) legacyCountry.remove();
+    const mobile = document.getElementById('id_mobile_no');
+    const phone = mobile && window.intlTelInput ? window.intlTelInput(mobile, {
+      initialCountry: 'in',
+      preferredCountries: ['in', 'us', 'gb', 'cn', 'fr'],
+      separateDialCode: true,
+      nationalMode: true,
+      utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js'
+    }) : null;
+    document.querySelector('.add-user-form')?.addEventListener('submit', function () {
+      if (phone && mobile) { const number = phone.getNumber(); if (number) mobile.value = number; }
+    });
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) { button.addEventListener('click', function () { const input = document.getElementById(button.dataset.passwordToggle); if (!input) return; input.type = input.type === 'password' ? 'text' : 'password'; button.classList.toggle('is-visible', input.type === 'text'); }); });
+  });
+</script>
+{% endblock %}

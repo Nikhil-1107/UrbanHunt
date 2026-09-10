@@ -1,0 +1,122 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Premium urban home illustration</title>
+  <desc id="desc">A luxury city residence with glass towers, warm windows, and abstract real estate interface details.</desc>
+  <defs>
+    <linearGradient id="sky" x1="150" y1="70" x2="830" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1f4f73"/>
+      <stop offset="0.52" stop-color="#10283f"/>
+      <stop offset="1" stop-color="#081523"/>
+    </linearGradient>
+    <linearGradient id="glassA" x1="260" y1="128" x2="656" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e7f7ff" stop-opacity="0.96"/>
+      <stop offset="0.45" stop-color="#90c7dd" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#173654" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="glassB" x1="460" y1="166" x2="812" y2="594" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f7fdff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#8dbed1" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#0b1f34" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="350" y1="330" x2="742" y2="588" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#dff8ff"/>
+      <stop offset="1" stop-color="#7fc2d9"/>
+    </linearGradient>
+    <filter id="shadow" x="80" y="50" width="810" height="646" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="28"/>
+      <feGaussianBlur stdDeviation="24"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.01 0 0 0 0 0.04 0 0 0 0 0.08 0 0 0 0.38 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_hero"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_hero" result="shape"/>
+    </filter>
+    <filter id="softShadow" x="155" y="332" width="673" height="299" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="18"/>
+      <feGaussianBlur stdDeviation="18"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.02 0 0 0 0 0.05 0 0 0 0 0.09 0 0 0 0.28 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_soft"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_soft" result="shape"/>
+    </filter>
+    <clipPath id="orbClip">
+      <path d="M813.3 357.1C799.4 516.2 656.2 637.2 496.5 620.8C336.7 604.4 190.2 498.1 174.4 357.1C158.6 216.2 273.4 40.5 442 35.2C610.5 29.9 827.2 198 813.3 357.1Z"/>
+    </clipPath>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <path d="M813.3 357.1C799.4 516.2 656.2 637.2 496.5 620.8C336.7 604.4 190.2 498.1 174.4 357.1C158.6 216.2 273.4 40.5 442 35.2C610.5 29.9 827.2 198 813.3 357.1Z" fill="url(#sky)"/>
+  </g>
+
+  <g clip-path="url(#orbClip)">
+    <path d="M144 480C225.7 432.2 306.5 406.8 386.5 403.8C493.1 399.7 548.2 441.3 648.3 423.8C720.1 411.3 785.3 371.5 844 304.5V690H144V480Z" fill="#07131f" fill-opacity="0.52"/>
+    <path d="M116 535C206.4 494.5 283.3 474.3 346.5 474.5C453.2 475 509.6 523 615.7 505C704.8 489.9 790.9 444.7 874 369.5V706H116V535Z" fill="#6cb4cf" fill-opacity="0.1"/>
+    <path d="M206 132L816 538" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+    <path d="M248 82L858 488" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+    <path d="M167 237L778 643" stroke="#ffffff" stroke-opacity="0.07" stroke-width="2"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path d="M252 466L451 352L704 496L506 612L252 466Z" fill="#07131f" fill-opacity="0.62"/>
+    <path d="M300 454L450 368L654 485L505 572L300 454Z" fill="#0f2b44"/>
+    <path d="M450 368L654 485L654 516L505 604L505 572L654 485L450 368Z" fill="#081523"/>
+    <path d="M300 454L505 572V604L300 486V454Z" fill="#153856"/>
+    <path d="M333 455L449 389L617 486L502 552L333 455Z" fill="#7fc2d9" fill-opacity="0.28"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M292 235L452 142L452 498L292 591V235Z" fill="url(#glassA)"/>
+    <path d="M452 142L615 235V591L452 498V142Z" fill="#0f2b44"/>
+    <path d="M452 142L615 235L452 328L292 235L452 142Z" fill="#d5f1fa" fill-opacity="0.82"/>
+    <path d="M323 253L426 193V474L323 535V253Z" fill="#ffffff" fill-opacity="0.16"/>
+    <path d="M470 190L583 254V529L470 464V190Z" fill="#7fc2d9" fill-opacity="0.22"/>
+    <path d="M353 271L396 246V296L353 321V271Z" fill="#e7f7ff" fill-opacity="0.82"/>
+    <path d="M353 346L396 321V371L353 396V346Z" fill="#ffffff" fill-opacity="0.26"/>
+    <path d="M353 421L396 396V446L353 471V421Z" fill="#e7f7ff" fill-opacity="0.68"/>
+    <path d="M494 255L548 286V338L494 307V255Z" fill="#e7f7ff" fill-opacity="0.7"/>
+    <path d="M494 365L548 396V448L494 417V365Z" fill="#ffffff" fill-opacity="0.2"/>
+    <path d="M292 235L452 328" stroke="#ffffff" stroke-opacity="0.42" stroke-width="3"/>
+    <path d="M452 328L615 235" stroke="#ffffff" stroke-opacity="0.24" stroke-width="3"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path d="M518 274L680 180L680 507L518 601V274Z" fill="url(#glassB)"/>
+    <path d="M680 180L780 237V565L680 507V180Z" fill="#0a1d31"/>
+    <path d="M518 274L680 180L780 237L619 331L518 274Z" fill="#e5f8ff" fill-opacity="0.86"/>
+    <path d="M550 292L646 236V505L550 560V292Z" fill="#ffffff" fill-opacity="0.15"/>
+    <path d="M700 234L752 264V510L700 480V234Z" fill="#5faac4" fill-opacity="0.2"/>
+    <path d="M579 312L620 288V339L579 363V312Z" fill="#e7f7ff" fill-opacity="0.7"/>
+    <path d="M579 387L620 363V414L579 438V387Z" fill="#ffffff" fill-opacity="0.22"/>
+    <path d="M579 462L620 438V489L579 513V462Z" fill="#e7f7ff" fill-opacity="0.64"/>
+    <path d="M710 297L740 314V366L710 349V297Z" fill="#e7f7ff" fill-opacity="0.68"/>
+    <path d="M710 405L740 422V474L710 457V405Z" fill="#ffffff" fill-opacity="0.18"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path d="M217 384L352 306L496 389L360 468L217 384Z" fill="#f6fbff" fill-opacity="0.94"/>
+    <path d="M217 384L360 468V519L217 436V384Z" fill="#dbeaf3"/>
+    <path d="M360 468L496 389V440L360 519V468Z" fill="#b7d5e5"/>
+    <path d="M260 391L353 337L454 395L360 449L260 391Z" fill="#0b1a2b"/>
+    <path d="M292 389L353 354L421 393L360 429L292 389Z" fill="url(#gold)"/>
+    <path d="M269 417L302 436V471L269 452V417Z" fill="#0b1a2b" fill-opacity="0.8"/>
+    <path d="M323 448L346 461V496L323 483V448Z" fill="#e7f7ff" fill-opacity="0.76"/>
+    <path d="M392 459L451 425V448L392 482V459Z" fill="#ffffff" fill-opacity="0.38"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="610" y="82" width="178" height="142" rx="20" fill="#ffffff" fill-opacity="0.95"/>
+    <rect x="633" y="110" width="58" height="12" rx="6" fill="#b8cfdd"/>
+    <rect x="633" y="140" width="112" height="10" rx="5" fill="#d8e6ef"/>
+    <rect x="633" y="164" width="88" height="10" rx="5" fill="#d8e6ef"/>
+    <circle cx="737" cy="112" r="24" fill="#7fc2d9" fill-opacity="0.24"/>
+    <path d="M725 113L735 123L752 101" stroke="#7fc2d9" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="633" y="191" width="60" height="12" rx="6" fill="#16324f"/>
+  </g>
+
+  <circle cx="250" cy="170" r="58" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="250" cy="170" r="34" fill="#ffffff" fill-opacity="0.08"/>
+  <circle cx="761" cy="338" r="84" stroke="#ffffff" stroke-opacity="0.11" stroke-width="2"/>
+  <circle cx="761" cy="338" r="48" stroke="#7fc2d9" stroke-opacity="0.22" stroke-width="2"/>
+  <path d="M180 320C235 275 282 264 321 287" stroke="#7fc2d9" stroke-opacity="0.28" stroke-width="5" stroke-linecap="round"/>
+  <path d="M742 613C698 630 644 635 580 628" stroke="#ffffff" stroke-opacity="0.18" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us | Urban Hunt{% endblock %}
+
+{% block content %}
+<div class="uh-about-page">
+
+  <!-- 1. HERO BANNER VISUAL IMAGE (EXACT CONTACT PAGE STRUCTURE) -->
+  <section class="uh-about-visual" aria-label="About Urban Hunt Hero Banner">
+    <div class="uh-about-visual-image" style="background-image: url('/media/logo/9.jpg');"></div>
+  </section>
+
+  <!-- 2. OVERLAPPING HERO CARD (MARGIN-TOP: -190PX EXACT CONTACT PAGE OVERLAY) -->
+  <section class="uh-about-hero-card-wrap">
+    <div class="container-xxl">
+      <div class="uh-about-hero-card">
+        <div class="row align-items-center g-4 g-lg-5">
+          <!-- Left Column Text -->
+          <div class="col-12 col-lg-6">
+            <div class="uh-card-content">
+              <span class="uh-label">ABOUT US</span>
+              <h1 class="uh-main-title">About Urban Hunt</h1>
+              <p class="uh-tagline">Helping you find the right place to live, invest, and grow.</p>
+              
+              <p class="uh-description">
+                Urban Hunt is a modern real-estate marketplace dedicated to simplifying property discovery and connecting buyers directly with verified property owners.
+              </p>
+              <p class="uh-description">
+                Our platform is designed to remove complexity from real estate transactions, delivering a transparent experience through verified listings and direct inquiry channels.
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column Illustration -->
+          <div class="col-12 col-lg-6 text-center">
+            <div class="uh-hero-illustration-wrapper">
+              <img src="/media/logo/10.jpg" alt="Urban Hunt Modern Architecture Illustration" class="uh-hero-illustration">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. OUR STORY SECTION -->
+  <section class="uh-story-section">
+    <div class="container-xxl">
+      <div class="uh-story-header text-center">
+        <span class="uh-label">OUR STORY</span>
+        <h2 class="uh-section-title">Built on Trust. Driven by Simplicity.</h2>
+        <p class="uh-story-lead">
+          We started Urban Hunt with a simple idea — real estate should be transparent, reliable, and people-first. Today, we continue to innovate and improve every day to make property search easy and stress-free.
+        </p>
+      </div>
+
+      <!-- 4 Value Columns -->
+      <div class="uh-values-grid">
+        <!-- Value 1 -->
+        <div class="uh-value-item">
+          <div class="uh-value-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </div>
+          <h3>Trust & Transparency</h3>
+          <p>Every listing is verified to ensure a safe and transparent experience for everyone.</p>
+        </div>
+
+        <!-- Value 2 -->
+        <div class="uh-value-item">
+          <div class="uh-value-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <h3>People First</h3>
+          <p>We focus on what matters most — helping people find a place they can truly call home.</p>
+        </div>
+
+        <!-- Value 3 -->
+        <div class="uh-value-item">
+          <div class="uh-value-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+          </div>
+          <h3>Smarter Search</h3>
+          <p>Powerful tools and filters help you find the right property faster and easier.</p>
+        </div>
+
+        <!-- Value 4 -->
+        <div class="uh-value-item">
+          <div class="uh-value-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+            </svg>
+          </div>
+          <h3>Growth Together</h3>
+          <p>We grow when our users grow. Your trust inspires us to keep getting better.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. OUR MISSION SECTION -->
+  <section class="uh-mission-section">
+    <div class="container-xxl">
+      <div class="uh-mission-container">
+        <div class="row align-items-center g-4 g-lg-5">
+          <!-- Left Image Column -->
+          <div class="col-12 col-lg-6">
+            <div class="uh-mission-image-wrapper">
+              <img src="/media/logo/8.jpg" alt="Urban Hunt Luxury Interior Living Room" class="uh-mission-image">
+            </div>
+          </div>
+
+          <!-- Right Content Column -->
+          <div class="col-12 col-lg-6">
+            <div class="uh-mission-content">
+              <span class="uh-label">OUR MISSION</span>
+              <h2 class="uh-section-title">To Redefine Real Estate for a Better Tomorrow</h2>
+              <p class="uh-body-paragraph">
+                At Urban Hunt, our mission is to redefine real estate interaction through high-quality, visual presentation, simple search infrastructure, and direct engagement tools.
+              </p>
+              <p class="uh-body-paragraph mb-4">
+                We believe that finding a place to live or invest should be an empowering, accessible experience built on confidence and clarity.
+              </p>
+
+              <!-- 3 Feature Items -->
+              <div class="uh-mission-features">
+                <!-- Item 1 -->
+                <div class="uh-mission-feature">
+                  <div class="uh-feature-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </div>
+                  <div class="uh-feature-text">
+                    <h4>Better Homes</h4>
+                    <p>Helping you discover spaces that fit your lifestyle and future.</p>
+                  </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="uh-mission-feature">
+                  <div class="uh-feature-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <polyline points="16 11 18 13 22 9"></polyline>
+                    </svg>
+                  </div>
+                  <div class="uh-feature-text">
+                    <h4>Stronger Connections</h4>
+                    <p>Connecting verified buyers and owners directly, without intermediaries.</p>
+                  </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="uh-mission-feature">
+                  <div class="uh-feature-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10"></line>
+                      <line x1="12" y1="20" x2="12" y2="4"></line>
+                      <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                  </div>
+                  <div class="uh-feature-text">
+                    <h4>Smarter Decisions</h4>
+                    <p>Equipping you with tools and information to make confident property choices.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. WHY CHOOSE URBAN HUNT? SECTION -->
+  <section class="uh-why-choose-section">
+    <div class="container-xxl">
+      <div class="uh-why-choose-card">
+        <h2 class="uh-why-title">Why Choose <span class="uh-green-accent">Urban Hunt?</span></h2>
+        
+        <div class="uh-why-grid">
+          <!-- Item 1 -->
+          <div class="uh-why-item">
+            <div class="uh-why-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <path d="m9 15 2 2 4-4"></path>
+              </svg>
+            </div>
+            <h3>Verified Listings</h3>
+            <p>All properties go through a strict verification process.</p>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="uh-why-item">
+            <div class="uh-why-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <h3>Direct Inquiry</h3>
+            <p>Connect directly with owners — no middlemen.</p>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="uh-why-item">
+            <div class="uh-why-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <h3>Easy & Fast</h3>
+            <p>Advanced filters and smart search for quick results.</p>
+          </div>
+
+          <!-- Item 4 -->
+          <div class="uh-why-item">
+            <div class="uh-why-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <h3>Save & Compare</h3>
+            <p>Save favorite properties and compare with ease.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. FINAL CALL TO ACTION BANNER -->
+  <section class="uh-about-cta-section">
+    <div class="container-xxl">
+      <div class="uh-cta-card">
+        <div class="uh-cta-text-wrap">
+          <h2 class="uh-cta-title">Ready to find your perfect place?</h2>
+          <p class="uh-cta-subtitle">Explore verified properties and connect directly with owners.</p>
+        </div>
+        <div class="uh-cta-btn-wrap">
+          <a href="{% url 'core:property_list' %}" class="uh-btn-green-cta">
+            Browse Properties <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

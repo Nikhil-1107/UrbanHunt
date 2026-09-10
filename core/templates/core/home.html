@@ -1,0 +1,577 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Urban Hunt | Real Estate Marketplace{% endblock %}
+
+{% block content %}
+<!-- 1. RESIDEO HERO & INTEGRATED SEARCH SECTION -->
+<section class="resideo-hero" id="heroSection">
+  <!-- Hero Background Image (Single 1.jpg Showcase) -->
+  <div class="hero-slider" id="heroSlider">
+    <div class="hero-slide active">
+      <img src="/media/logo/1.jpg" alt="Urban Hunt Showcase" class="hero-slide-img" loading="eager" />
+    </div>
+  </div>
+
+  <!-- Soft Dark Overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- Hero Content (Heading & Floating Resideo Search Bar) -->
+  <div class="resideo-hero-content">
+    <h1 class="resideo-hero-title">Find your future home.</h1>
+
+    <!-- Resideo Floating Search Filter Bar -->
+    <div class="resideo-search-bar-wrapper">
+      <form action="{% url 'core:property_list' %}" method="get" class="resideo-search-form">
+        <!-- Property Type Dropdown -->
+        <div class="resideo-search-field resideo-select-field">
+          <select name="property_type" class="resideo-select" aria-label="Property Status">
+            <option value="">All Statuses</option>
+            <option value="rent">For Rent</option>
+            <option value="sell">For Sale</option>
+          </select>
+          <div class="select-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </div>
+
+        <!-- Keyword / Location Input -->
+        <div class="resideo-search-field resideo-input-field">
+          <input type="text" name="q" class="resideo-input" placeholder="Enter address..." aria-label="Enter address" />
+        </div>
+
+        <!-- Search Submit Button -->
+        <button type="submit" class="resideo-search-btn" aria-label="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+</section>
+
+<!-- MAIN HOMEPAGE SECTIONS CONTAINER -->
+<div class="container-xxl uh-top-homepage-container">
+  <!-- 2. RECOMMENDED PROPERTIES SECTION -->
+  <section class="section-resideo">
+    <div class="mb-4">
+      <h2 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif; font-size: 1.85rem; color: #0F1729;">Recommended For You</h2>
+      <p class="text-secondary mb-0" style="font-family: 'Manrope', sans-serif; font-size: 0.95rem;">Listings we think you'll love.</p>
+    </div>
+
+    <div class="row g-4">
+      {% for property in featured_properties %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <article class="uh-property-card">
+            <a href="{% url 'core:property_detail' property.pk %}" class="uh-card-link-wrapper" aria-label="{{ property.title }}">
+              <div class="uh-card-media-wrapper">
+                {% if property.image %}
+                  <img src="{{ property.image.url }}" alt="{{ property.title }}" class="uh-card-img" loading="lazy" />
+                {% else %}
+                  <div class="uh-card-media-placeholder">
+                    <span>Urban Hunt</span>
+                  </div>
+                {% endif %}
+
+                <!-- Dark transparent gradient overlay at bottom -->
+                <div class="uh-card-gradient-overlay"></div>
+
+                <!-- Badges overlay -->
+                <div class="uh-card-badges-left">
+                  {% if property.property_type == 'sell' %}
+                    <span class="uh-badge uh-badge-sell">For Sale</span>
+                  {% else %}
+                    <span class="uh-badge uh-badge-rent">For Rent</span>
+                  {% endif %}
+
+                  {% if property.is_verified %}
+                    <span class="uh-badge uh-badge-verified">Verified</span>
+                  {% endif %}
+                </div>
+
+                <!-- Favorite / Heart Button -->
+                {% if request.user.is_authenticated and request.user.role == 'buyer' %}
+                  <button
+                    type="button"
+                    class="uh-card-fav-btn {% if property.pk in saved_property_ids %}saved{% endif %}"
+                    data-property-id="{{ property.pk }}"
+                    title="Save listing"
+                    aria-label="Save listing"
+                    onclick="toggleSaveProperty(this, event, {{ property.pk }})"
+                  >
+                    <svg viewBox="0 0 24 24" class="uh-heart-icon"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                  </button>
+                {% endif %}
+
+                <!-- Property Overlay Details -->
+                <div class="uh-card-overlay-content">
+                  <div class="uh-card-seller-inline">
+                    <div class="uh-seller-inline-avatar">
+                      {% if property.seller.avatar %}
+                        <img src="{{ property.seller.avatar.url }}" alt="{{ property.seller.username }}" />
+                      {% else %}
+                        {{ property.seller.username|first|upper }}
+                      {% endif %}
+                    </div>
+                    <div class="uh-seller-inline-info">
+                      <span class="uh-seller-inline-label">Listed by</span>
+                      <span class="uh-seller-inline-name">{{ property.seller.get_full_name|default:property.seller.username }}</span>
+                    </div>
+                  </div>
+                  <h3 class="uh-card-title">{{ property.title }}</h3>
+                  <div class="uh-card-price">
+                    {% if '₹' in property.price %}{{ property.price }}{% else %}₹{{ property.price }}{% endif %}{% if property.property_type == 'rent' and '/mo' not in property.price and 'mo' not in property.price %}<span class="uh-price-period">/mo</span>{% endif %}
+                  </div>
+                  <div class="uh-card-specs">
+                    <span class="uh-spec-location">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 3px; vertical-align: -1px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5-2.5 2.5z"/></svg>
+                      {{ property.location }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center py-5">
+          <p class="text-muted fs-5">No featured properties available at the moment.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4">
+      <a href="{% url 'core:property_list' %}" class="uh-browse-all-link">
+        <span class="uh-browse-all-text">BROWSE ALL</span>
+        <span class="uh-browse-all-line"></span>
+      </a>
+    </div>
+  </section>
+
+</div>
+<!-- END container-xxl for sections 1–2 -->
+
+<!-- 3. WHY CHOOSE US SECTION (Full Width — outside container) -->
+<section class="uh-why-choose-us-section" style="background-image: url('{{ MEDIA_URL }}logo/wcu.jpg');">
+  <!-- Soft Light Overlay for readability -->
+  <div class="uh-wcu-overlay"></div>
+
+  <div class="container-xxl position-relative" style="z-index: 2;">
+    <!-- Heading Area -->
+    <div class="uh-wcu-header text-center">
+      <h2 class="uh-wcu-title">Why Choose Us</h2>
+      <p class="uh-wcu-subtitle">We offer perfect real estate services.</p>
+    </div>
+
+    <!-- Four Overlapping Feature Cards Panel -->
+    <div class="uh-wcu-cards-panel">
+      <div class="row g-0">
+        <!-- Feature 1 -->
+        <div class="col-12 col-md-6 col-lg-3 uh-wcu-card-col">
+          <div class="uh-wcu-card">
+            <div class="uh-wcu-icon-wrapper">
+              <svg width="78" height="78" viewBox="0 0 64 64" fill="none" stroke="#222222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 44V27L32 12L50 27V44C50 46.2 48.2 48 46 48H18C15.8 48 14 46.2 14 44Z"/>
+                <path d="M8 50H56"/>
+                <path d="M38 34C38 29.5 41.5 26 46 26C50.5 26 54 29.5 54 34C54 40 46 48 46 48C46 48 38 40 38 34Z"/>
+                <circle cx="46" cy="34" r="2.5" fill="#222222"/>
+              </svg>
+            </div>
+            <h3 class="uh-wcu-card-title">Find your future home</h3>
+            <p class="uh-wcu-card-desc">We help you find a new home by offering a smart real estate experience</p>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="col-12 col-md-6 col-lg-3 uh-wcu-card-col">
+          <div class="uh-wcu-card">
+            <div class="uh-wcu-icon-wrapper">
+              <svg width="78" height="78" viewBox="0 0 64 64" fill="none" stroke="#222222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="32" cy="32" r="26" stroke-dasharray="3.5 3.5"/>
+                <path d="M18 30L26 22L36 32L30 38L22 30L18 34L26 42L36 32"/>
+                <path d="M46 30L38 22L34 26L38 30"/>
+                <path d="M46 34L38 42L28 32"/>
+              </svg>
+            </div>
+            <h3 class="uh-wcu-card-title">Experienced agents</h3>
+            <p class="uh-wcu-card-desc">Find an experienced agent who knows your market best</p>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="col-12 col-md-6 col-lg-3 uh-wcu-card-col">
+          <div class="uh-wcu-card">
+            <div class="uh-wcu-icon-wrapper">
+              <svg width="78" height="78" viewBox="0 0 64 64" fill="none" stroke="#222222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="12" y="24" width="40" height="26" rx="4"/>
+                <path d="M40 37H52V43H40A3 3 0 0 1 40 37Z"/>
+                <circle cx="46" cy="40" r="1.5" fill="#222222"/>
+                <path d="M20 24V16C20 14.9 20.9 14 22 14H42C43.1 14 44 14.9 44 16V24"/>
+                <circle cx="32" cy="19" r="2"/>
+              </svg>
+            </div>
+            <h3 class="uh-wcu-card-title">Buy or rent homes</h3>
+            <p class="uh-wcu-card-desc">Millions of houses and apartments in your favourite cities</p>
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="col-12 col-md-6 col-lg-3 uh-wcu-card-col">
+          <div class="uh-wcu-card">
+            <div class="uh-wcu-icon-wrapper">
+              <svg width="78" height="78" viewBox="0 0 64 64" fill="none" stroke="#222222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 30C20 23 25 18 32 18C36 18 39.5 20 41 23C43.5 20.5 47 20 50 22.5C53.5 25 55 29 54 33C56.5 35 57.5 38.5 56 42C54.5 45.5 50.5 48 46 48H20C14.5 48 10 43.5 10 38C10 33 14 29 19 29"/>
+                <rect x="22" y="24" width="16" height="12" rx="2" transform="rotate(-6 22 24)"/>
+                <rect x="27" y="27" width="16" height="12" rx="2" transform="rotate(6 27 27)"/>
+              </svg>
+            </div>
+            <h3 class="uh-wcu-card-title">List your own property</h3>
+            <p class="uh-wcu-card-desc">Sign up now and sell or rent your own properties</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESUME container-xxl for sections 4+ -->
+<div class="container-xxl uh-after-wcu-container">
+
+  <!-- 4. EXPLORE POPULAR CITIES SECTION -->
+  {% if popular_cities %}
+  <section class="section-resideo">
+    <div class="mb-4">
+      <h2 class="fw-bold mb-1" style="font-family: 'Manrope', sans-serif; font-size: 1.85rem; color: #0F1729;">Explore Popular Cities</h2>
+      <p class="text-secondary mb-0" style="font-family: 'Manrope', sans-serif; font-size: 0.95rem;">Discover properties across India's most popular real estate destinations.</p>
+    </div>
+
+    <div class="row g-4">
+      {% for city in popular_cities %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <a href="{% url 'core:property_list' %}?location={{ city.name|urlencode }}" class="uh-city-card">
+            <div class="uh-city-card-image-wrapper">
+              {% if city.image %}
+                <img src="{{ city.image.url }}" alt="{{ city.name }}" class="uh-city-card-img" loading="lazy" />
+              {% else %}
+                <div class="uh-city-card-placeholder">
+                  <span>{{ city.name }}</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="uh-city-card-info">
+              <h3 class="uh-city-card-title">{{ city.name }}</h3>
+              <p class="uh-city-card-state">{{ city.state }}</p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-4">
+      <a href="{% url 'core:property_list' %}" class="uh-browse-all-link">
+        <span class="uh-browse-all-text">EXPLORE CITIES</span>
+        <span class="uh-browse-all-line"></span>
+      </a>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- 5. TRUSTED PROPERTY OWNERS / SELLERS SECTION -->
+  {% if trusted_sellers %}
+  <section class="section-resideo" id="sellers">
+    <div class="section-header-resideo">
+      <span class="eyebrow">TRUSTED PARTNERS</span>
+      <h2>Meet Our Property Owners</h2>
+      <p>Work directly with verified sellers listing properties across Urban Hunt.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      {% for seller in trusted_sellers %}
+        <div class="col-12 col-sm-6 col-lg-3">
+          <a href="{% url 'core:property_list' %}?q={{ seller.username|urlencode }}" class="resideo-agent-card">
+            <div class="resideo-agent-photo-wrapper">
+              {% if seller.avatar %}
+                <img src="{{ seller.avatar.url }}" alt="{{ seller.username }}" class="resideo-agent-photo" />
+              {% else %}
+                <div class="resideo-agent-photo-placeholder">
+                  <span>{{ seller.username|first|upper }}</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="resideo-agent-info-box">
+              <h3 class="resideo-agent-name">{{ seller.get_full_name|default:seller.username }}</h3>
+              <p class="resideo-agent-contact">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; vertical-align: -1px;">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                {% if seller.mobile_no %}{{ seller.mobile_no }}{% else %}(123) 456-7890{% endif %}
+              </p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+  </section>
+  {% endif %}
+
+</div>
+<!-- END container-xxl for sections 4-5 -->
+
+<!-- 6. FREQUENTLY ASKED QUESTIONS (FAQ) SECTION -->
+<section class="faq-section" id="faq" style="background-image: url('{{ MEDIA_URL }}logo/why_choose_us_bg.png');">
+  <!-- Soft Light Overlay for contrast -->
+  <div class="faq-overlay"></div>
+
+  <div class="container-xxl">
+    <div class="row g-4 g-lg-5 align-items-start">
+      <!-- LEFT COLUMN: HEADER & UNIQUE HELP WIDGET -->
+      <div class="col-12 col-lg-5">
+        <div class="faq-header">
+          <span class="faq-header-label">FREQUENTLY ASKED QUESTIONS</span>
+          <h2 class="faq-heading">Everything you need to know</h2>
+          <p class="faq-description">Find quick answers to the most common questions about buying, renting, saving, and listing properties on Urban Hunt.</p>
+        </div>
+
+        <!-- Unique Support Agent Avatar Widget Card -->
+        <div class="faq-visual-card">
+          <div class="faq-agent-avatars">
+            <div class="avatar-stack">
+              <span class="avatar-pill avatar-1">UH</span>
+              <span class="avatar-pill avatar-2">AG</span>
+              <span class="avatar-pill avatar-3">SH</span>
+            </div>
+            <span class="online-status-badge">
+              <span class="online-dot"></span> Online Support
+            </span>
+          </div>
+          <div class="faq-visual-info">
+            <h4>Still have questions?</h4>
+            <p>Can’t find what you’re looking for? Our property experts are online and ready to help.</p>
+            <a href="{% url 'core:contact' %}" class="faq-contact-btn">
+              <span>Get in Touch</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- RIGHT COLUMN: EXPANDABLE ACCORDION ITEMS -->
+      <div class="col-12 col-lg-7">
+        <div class="faq-list">
+
+          <!-- Question 1 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-1"
+              id="faq-quest-1"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">How can I search for a property?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-1" class="faq-answer" role="region" aria-labelledby="faq-quest-1">
+              <div class="faq-answer-content">
+                <p>Users can browse available properties and use the search and filtering options to find properties based on their requirements.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question 2 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-2"
+              id="faq-quest-2"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">Can I search for properties for both sale and rent?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-2" class="faq-answer" role="region" aria-labelledby="faq-quest-2">
+              <div class="faq-answer-content">
+                <p>Yes. Allow users to switch between available sale and rental listings using the existing property search functionality.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question 3 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-3"
+              id="faq-quest-3"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">How can I save a property?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-3" class="faq-answer" role="region" aria-labelledby="faq-quest-3">
+              <div class="faq-answer-content">
+                <p>Logged-in users can use the save/favorite option on a property to keep it in their Saved Properties section.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question 4 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-4"
+              id="faq-quest-4"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">How can I contact a property owner?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-4" class="faq-answer" role="region" aria-labelledby="faq-quest-4">
+              <div class="faq-answer-content">
+                <p>Users can open a property's details and use the available contact/inquiry option to communicate with the property owner.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question 5 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-5"
+              id="faq-quest-5"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">Can I list my property on Urban Hunt?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-5" class="faq-answer" role="region" aria-labelledby="faq-quest-5">
+              <div class="faq-answer-content">
+                <p>Registered sellers can access their seller dashboard and add/manage their property listings.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question 6 -->
+          <div class="faq-item">
+            <button
+              type="button"
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls="faq-answer-6"
+              id="faq-quest-6"
+              onclick="toggleFaq(this)"
+            >
+              <span class="faq-question-text">Are all properties verified?</span>
+              <span class="faq-toggle" aria-hidden="true">
+                <svg class="icon-plus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <svg class="icon-minus" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </span>
+            </button>
+            <div id="faq-answer-6" class="faq-answer" role="region" aria-labelledby="faq-quest-6">
+              <div class="faq-answer-content">
+                <p>We encourage sellers to complete property details and verification checks. Properties verified by our admin team feature a verified badge on their listing.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function setSearchType(type, btn) {
+    document.getElementById('heroPropertyType').value = type;
+    document.querySelectorAll('.search-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function toggleFaq(button) {
+    const item = button.closest('.faq-item');
+    const isOpen = item.classList.contains('active');
+    const answer = item.querySelector('.faq-answer');
+
+    // Accordion: single open item behavior on desktop/mobile
+    document.querySelectorAll('.faq-item').forEach(otherItem => {
+      if (otherItem !== item && otherItem.classList.contains('active')) {
+        otherItem.classList.remove('active');
+        const otherBtn = otherItem.querySelector('.faq-question');
+        if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+        const otherAns = otherItem.querySelector('.faq-answer');
+        if (otherAns) otherAns.style.maxHeight = null;
+      }
+    });
+
+    if (isOpen) {
+      item.classList.remove('active');
+      button.setAttribute('aria-expanded', 'false');
+      if (answer) answer.style.maxHeight = null;
+    } else {
+      item.classList.add('active');
+      button.setAttribute('aria-expanded', 'true');
+      if (answer) answer.style.maxHeight = answer.scrollHeight + 'px';
+    }
+  }
+</script>
+{% endblock %}
+

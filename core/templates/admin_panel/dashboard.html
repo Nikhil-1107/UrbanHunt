@@ -1,0 +1,148 @@
+{% extends "admin_panel/base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block breadcrumb %}<span class="breadcrumb-sep">/</span><span>Dashboard</span>{% endblock %}
+{% block content %}
+<section class="dashboard-heading"><div><h1 class="page-title">Admin Dashboard</h1><p class="page-subtitle">Overview of Urban Hunt platform activity.</p></div><div class="dashboard-date"><span class="date-icon"><svg viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm12 17H5V9h14v10z"/></svg></span><span><strong id="dashboard-date">Sunday, 7 September 2026</strong><small>Have a productive day!</small></span></div></section>
+
+<section class="stat-grid dashboard-kpis">
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.total_users }}</div><div class="stat-label">Total Users</div><div class="stat-trend {% if not stats.total_users_trend.up %}stat-trend--down{% endif %}">{{ stats.total_users_trend.up|yesno:"↑,↓" }} {{ stats.total_users_trend.value }}% <span>from last month</span></div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.buyers }}</div><div class="stat-label">Buyers</div><div class="stat-trend {% if not stats.buyers_trend.up %}stat-trend--down{% endif %}">{{ stats.buyers_trend.up|yesno:"↑,↓" }} {{ stats.buyers_trend.value }}% <span>from last month</span></div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.sellers }}</div><div class="stat-label">Sellers</div><div class="stat-trend {% if not stats.sellers_trend.up %}stat-trend--down{% endif %}">{{ stats.sellers_trend.up|yesno:"↑,↓" }} {{ stats.sellers_trend.value }}% <span>from last month</span></div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 2l2.1 6.4H21l-5.5 4 2.1 6.4-5.6-4-5.6 4 2.1-6.4-5.5-4h6.9z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.verified_properties }}</div><div class="stat-label">Verified Properties</div><div class="stat-trend {% if not stats.verified_properties_trend.up %}stat-trend--down{% endif %}">{{ stats.verified_properties_trend.up|yesno:"↑,↓" }} {{ stats.verified_properties_trend.value }}% <span>from last month</span></div></div></div>
+  <div class="stat-card stat-card--warning"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11h-2V6h2zm0 4h-2v-2h2z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.pending_properties }}</div><div class="stat-label">Pending Approval</div><div class="stat-trend stat-trend--down">{{ stats.pending_properties_trend.up|yesno:"↑,↓" }} {{ stats.pending_properties_trend.value }}% <span>from last month</span></div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M20 3H4a2 2 0 0 0-2 2v17l4-4h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.total_inquiries }}</div><div class="stat-label">Inquiries</div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v2H4zm0 4h10v2H4zm0 4h16v2H4zm0 4h10v2H4z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.total_messages }}</div><div class="stat-label">Chat Messages</div></div></div>
+  <div class="stat-card"><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v17l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg></div><div class="stat-body"><div class="stat-value">{{ stats.saved_properties }}</div><div class="stat-label">Saved Properties</div></div></div>
+</section>
+
+<section class="analytics-grid"><div class="dashboard-card chart-card"><div class="card-heading"><div><h2>User Growth</h2><p>New users registered over the last 6 months</p></div><span class="select-display">Last 6 Months <span>⌄</span></span></div><div class="growth-chart">{% for item in user_growth %}<div class="growth-column"><span class="growth-value">{{ item.count }}</span><div class="growth-bar" style="height:{{ item.height }}px"></div><small>{{ item.label }}</small></div>{% endfor %}</div></div><div class="dashboard-card chart-card"><div class="card-heading"><div><h2>Property Listings</h2><p>Total vs Verified properties</p></div><span class="select-display">This Month <span>⌄</span></span></div><div class="donut-layout"><div class="donut" style="--verified-percent: {{ verified_percent }}%;"><div><small>Total</small><strong>{{ stats.verified_properties|add:stats.pending_properties }}</strong></div></div><div class="legend"><span><i class="legend-dot legend-dot--dark"></i>Verified Properties <b>{{ stats.verified_properties }}</b></span><span><i class="legend-dot legend-dot--soft"></i>Pending Approval <b>{{ stats.pending_properties }}</b></span><span><i class="legend-dot legend-dot--muted"></i>Rejected <b>{{ rejected_properties }}</b></span></div></div></div></section>
+
+<section class="dashboard-grid dashboard-lists"><div class="table-card dashboard-card"><div class="table-card-header"><span class="table-card-title"><span class="header-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>Recent Properties</span><a href="{% url 'core:admin_properties' %}" class="btn btn--view btn--sm">View All <span>→</span></a></div><div class="recent-list">{% for p in recent_properties %}<div class="recent-item"><div class="recent-thumb">{% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.title }}">{% else %}<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>{% endif %}</div><div class="recent-info"><strong>{{ p.title }}</strong><small>{{ p.location }}</small></div><div class="recent-meta"><span>{{ p.created_at|date:"d M Y" }}</span><span class="badge {% if p.is_verified %}badge--green{% else %}badge--warn{% endif %}">{% if p.is_verified %}Verified{% else %}Pending{% endif %}</span></div></div>{% empty %}<p class="table-empty">No properties yet.</p>{% endfor %}</div></div><div class="table-card dashboard-card"><div class="table-card-header"><span class="table-card-title"><span class="header-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>Recent Users</span><a href="{% url 'core:admin_users' %}" class="btn btn--view btn--sm">View All <span>→</span></a></div><div class="recent-list">{% for u in recent_users %}<div class="recent-item"><div class="recent-thumb recent-thumb--avatar">{% if u.avatar %}<img src="{{ u.avatar.url }}" alt="{{ u.username }}">{% else %}{{ u.username|first|upper }}{% endif %}</div><div class="recent-info"><strong>{{ u.username }}</strong><small>{{ u.email|default:"No email" }}</small></div><div class="recent-meta"><span>{{ u.date_joined|date:"d M Y" }}</span><span class="badge {% if u.role == 'seller' %}badge--green{% else %}badge--blue{% endif %}">{{ u.role|upper }}</span></div></div>{% empty %}<p class="table-empty">No users yet.</p>{% endfor %}</div></div></section>
+<section class="dashboard-lower-grid">
+  <div class="dashboard-card lower-card locations-card" id="top-locations">
+    <div class="lower-card-heading"><h2><span class="lower-icon"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg></span>Top Locations</h2><select class="location-filter" aria-label="Filter top locations"><option value="1m" {% if location_period == '1m' %}selected{% endif %}>This Month</option><option value="3m" {% if location_period == '3m' %}selected{% endif %}>Last 3 Months</option><option value="6m" {% if location_period == '6m' %}selected{% endif %}>Last 6 Months</option><option value="all" {% if location_period == 'all' %}selected{% endif %}>All Time</option></select></div>
+    <div class="location-list">{% for item in top_locations %}<div class="location-row"><span class="location-name">{{ item.name }}</span><span class="location-track"><span style="width:{{ item.width }}%"></span></span><strong class="location-count">{{ item.count }}</strong></div>{% empty %}<p class="table-empty">No location data yet.</p>{% endfor %}</div>
+  </div>
+  <div class="dashboard-card lower-card quick-actions-card">
+    <div class="lower-card-heading"><h2><span class="lower-icon"><svg viewBox="0 0 24 24"><path d="M12 2 14.2 8.8 21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2zm7 13 1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/></svg></span>Quick Actions</h2><p>Easy access to common tasks.</p></div>
+    <div class="quick-actions-grid"><a class="quick-action quick-action--green" href="{% url 'core:admin_property_create' %}"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5zm2-15v3h3v2h-3v3h-2v-3H7V8h3V5h2z"/></svg><span>Add Property</span></a><a class="quick-action quick-action--green" href="{% url 'core:admin_properties_pending' %}"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 15-4-4 1.4-1.4L11 14.2l4.6-4.6L17 11z"/></svg><span>Approve Properties</span></a><a class="quick-action quick-action--blue" href="{% url 'core:admin_users' %}"><svg viewBox="0 0 24 24"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zM8 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm8 2c-2 0-6 1-6 3v2h12v-2c0-1-4-3-6-3zM8 13c-2 0-6 1-6 3v2h4v-2c0-1 .8-2 2.2-2.7A5.5 5.5 0 0 0 8 13z"/></svg><span>Manage Users</span></a><a class="quick-action quick-action--rose" href="{% url 'core:admin_inquiries' %}"><svg viewBox="0 0 24 24"><path d="M20 3H4a2 2 0 0 0-2 2v15l4-3h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span>View Inquiries</span></a><button class="quick-action quick-action--blue quick-action--disabled" type="button" disabled><svg viewBox="0 0 24 24"><path d="M4 19h3V9H4v10zm6 0h3V5h-3v14zm6 0h3V2h-3v17z"/></svg><span>View Reports</span></button><button class="quick-action quick-action--gray quick-action--disabled" type="button" disabled><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-1 7.8 7.8 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7.3 7.3 0 0 0-1.7-1L15 3h-4l-.3 3.1a7.3 7.3 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5 2 1.5-2 1.5 2 3.4 2.4-1a7.3 7.3 0 0 0 1.7 1L11 21h4l.3-3.1a7.3 7.3 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5zM13 15.5A3.5 3.5 0 1 1 13 8a3.5 3.5 0 0 1 0 7.5z"/></svg><span>Settings</span></button></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const rangeDisplay = document.querySelector('.analytics-grid .select-display');
+    if (!rangeDisplay) return;
+    const params = new URLSearchParams(window.location.search);
+    const selected = '{{ growth_period }}';
+    const options = [
+      ['all', 'All Time'],
+      ['7d', 'Last 7 Days'],
+      ['1m', 'Last 1 Month'],
+      ['3m', 'Last 3 Months'],
+      ['6m', 'Last 6 Months']
+    ];
+    const select = document.createElement('select');
+    select.className = 'growth-range-select';
+    select.setAttribute('aria-label', 'Select user growth period');
+    options.forEach(function (option) {
+      const item = document.createElement('option');
+      item.value = option[0];
+      item.textContent = option[1];
+      item.selected = option[0] === selected;
+      select.appendChild(item);
+    });
+    rangeDisplay.replaceChildren(select);
+    const description = document.querySelector('.analytics-grid .card-heading p');
+    if (description) {
+      const labels = { 'all': 'all time', '7d': '7 days', '1m': '1 month', '3m': '3 months', '6m': '6 months' };
+      description.textContent = 'New users registered over the last ' + labels[selected];
+    }
+    select.addEventListener('change', function () {
+      params.set('growth_period', select.value);
+      window.location.search = params.toString();
+    });
+
+    const propertyDisplay = document.querySelectorAll('.analytics-grid .select-display')[1];
+    if (propertyDisplay) {
+      const propertySelected = '{{ property_period }}';
+      const propertyOptions = [
+        ['all', 'All Time'],
+        ['7d', 'Last 7 Days'],
+        ['1m', 'This Month'],
+        ['3m', 'Last 3 Months'],
+        ['6m', 'Last 6 Months']
+      ];
+      const propertySelect = document.createElement('select');
+      propertySelect.className = 'growth-range-select';
+      propertySelect.setAttribute('aria-label', 'Select property listing period');
+      propertyOptions.forEach(function (option) {
+        const item = document.createElement('option');
+        item.value = option[0];
+        item.textContent = option[1];
+        item.selected = option[0] === propertySelected;
+        propertySelect.appendChild(item);
+      });
+      propertyDisplay.replaceChildren(propertySelect);
+      propertySelect.addEventListener('change', function () {
+        params.set('property_period', propertySelect.value);
+        window.location.search = params.toString();
+      });
+
+      const donut = document.querySelector('.donut');
+      const donutTotal = document.querySelector('.donut strong');
+      const legendValues = document.querySelectorAll('.legend b');
+      const verified = {{ listing_verified }};
+      const pending = {{ listing_pending }};
+      const total = verified + pending;
+      if (donut) donut.style.setProperty('--verified-percent', '{{ listing_verified_percent }}%');
+      if (donutTotal) donutTotal.textContent = total;
+      if (legendValues[0]) legendValues[0].textContent = verified;
+      if (legendValues[1]) legendValues[1].textContent = pending;
+    }
+    const locationFilter = document.querySelector('.location-filter');
+    if (locationFilter) {
+      locationFilter.addEventListener('change', function () {
+        params.set('location_period', locationFilter.value);
+        const locationCard = document.querySelector('.locations-card');
+        const locationList = locationCard && locationCard.querySelector('.location-list');
+        if (!locationList) return;
+        locationList.classList.add('is-loading');
+        fetch(window.location.pathname + '?' + params.toString(), {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+          .then(function (response) { return response.text(); })
+          .then(function (html) {
+            const parsed = new DOMParser().parseFromString(html, 'text/html');
+            const updatedList = parsed.querySelector('.locations-card .location-list');
+            if (updatedList) locationList.innerHTML = updatedList.innerHTML;
+            history.replaceState(null, '', window.location.pathname + '?' + params.toString() + '#top-locations');
+            locationCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          })
+          .catch(function () {
+            locationList.innerHTML = '<p class="table-empty">Unable to load locations.</p>';
+          })
+          .finally(function () { locationList.classList.remove('is-loading'); });
+      });
+    }
+  }());
+  (function () {
+    const quickActions = document.querySelectorAll('.quick-actions-grid .quick-action');
+    const reportsAction = quickActions[4];
+    const settingsAction = quickActions[5];
+    if (reportsAction) {
+      reportsAction.disabled = false;
+      reportsAction.classList.remove('quick-action--disabled');
+      reportsAction.addEventListener('click', function () { window.location.href = "{% url 'core:admin_reports' %}"; });
+    }
+    if (settingsAction) {
+      settingsAction.disabled = false;
+      settingsAction.classList.remove('quick-action--disabled');
+      settingsAction.addEventListener('click', function () { window.location.href = "{% url 'core:admin_settings' %}"; });
+    }
+  }());
+</script>
+{% endblock %}
