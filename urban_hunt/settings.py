@@ -29,7 +29,26 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if host.strip()]
+ALLOWED_HOSTS = [
+	host.strip()
+	for host in os.getenv(
+		"DJANGO_ALLOWED_HOSTS",
+		"urbanhunt-nine.vercel.app,localhost,127.0.0.1",
+	).split(",")
+	if host.strip()
+]
+
+CSRF_TRUSTED_ORIGINS = [
+	origin.strip()
+	for origin in os.getenv(
+		"DJANGO_CSRF_TRUSTED_ORIGINS",
+		"https://urbanhunt-nine.vercel.app,http://localhost:8000,http://127.0.0.1:8000",
+	).split(",")
+	if origin.strip()
+]
+
+# Vercel terminates HTTPS before forwarding requests to Django.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -81,11 +100,13 @@ WSGI_APPLICATION = "urban_hunt.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+	"default": {
+		"ENGINE": "django.db.backends.sqlite3",
+		"NAME": Path(os.getenv("DJANGO_DB_NAME", "db.sqlite3")),
+	}
 }
+if not DATABASES["default"]["NAME"].is_absolute():
+	DATABASES["default"]["NAME"] = BASE_DIR / DATABASES["default"]["NAME"]
 
 
 # Password validation
@@ -135,3 +156,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in {"1", "true", "yes", "on"}
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+
+SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "True" if not DEBUG else "False").lower() in {"1", "true", "yes", "on"}
+SESSION_COOKIE_SECURE = os.getenv("DJANGO_SESSION_COOKIE_SECURE", "True" if not DEBUG else "False").lower() in {"1", "true", "yes", "on"}
+CSRF_COOKIE_SECURE = os.getenv("DJANGO_CSRF_COOKIE_SECURE", "True" if not DEBUG else "False").lower() in {"1", "true", "yes", "on"}
