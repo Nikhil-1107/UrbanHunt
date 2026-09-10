@@ -29,23 +29,32 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = [
-	host.strip()
-	for host in os.getenv(
-		"DJANGO_ALLOWED_HOSTS",
-		"urbanhunt-nine.vercel.app,localhost,127.0.0.1",
-	).split(",")
-	if host.strip()
-]
+def _csv_setting(name, default=""):
+	return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
 
-CSRF_TRUSTED_ORIGINS = [
-	origin.strip()
-	for origin in os.getenv(
-		"DJANGO_CSRF_TRUSTED_ORIGINS",
-		"https://urbanhunt-nine.vercel.app,http://localhost:8000,http://127.0.0.1:8000",
-	).split(",")
-	if origin.strip()
-]
+
+primary_vercel_host = os.getenv("DJANGO_PRIMARY_HOST", "urbanhunt-nine.vercel.app").strip()
+current_vercel_host = os.getenv(
+	"DJANGO_VERCEL_DEPLOYMENT_HOST",
+	"urbanhunt-git-main-nikhil-1107s-projects.vercel.app",
+).strip()
+
+# A leading dot matches the Vercel root domain and its subdomains in Django.
+ALLOWED_HOSTS = list(dict.fromkeys(
+	_csv_setting("DJANGO_ALLOWED_HOSTS")
+	+ ["localhost", "127.0.0.1", ".vercel.app"]
+))
+
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(
+	_csv_setting("DJANGO_CSRF_TRUSTED_ORIGINS")
+	+ [
+		f"https://{primary_vercel_host}",
+		f"https://{current_vercel_host}",
+		"https://*.vercel.app",
+		"http://localhost:8000",
+		"http://127.0.0.1:8000",
+	]
+))
 
 # Vercel terminates HTTPS before forwarding requests to Django.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
