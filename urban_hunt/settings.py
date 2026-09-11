@@ -13,7 +13,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,10 +26,12 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
+SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured("SECRET_KEY must be set in the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
+DEBUG = (os.getenv("DEBUG") or os.getenv("DJANGO_DEBUG", "False")).lower() in {"1", "true", "yes", "on"}
 
 def _csv_setting(name, default=""):
 	return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
@@ -41,12 +45,12 @@ current_vercel_host = os.getenv(
 
 # A leading dot matches the Vercel root domain and its subdomains in Django.
 ALLOWED_HOSTS = list(dict.fromkeys(
-	_csv_setting("DJANGO_ALLOWED_HOSTS")
-	+ ["localhost", "127.0.0.1", ".vercel.app"]
+    _csv_setting("ALLOWED_HOSTS", os.getenv("DJANGO_ALLOWED_HOSTS", ""))
+    + ["localhost", "127.0.0.1", ".vercel.app"]
 ))
 
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(
-	_csv_setting("DJANGO_CSRF_TRUSTED_ORIGINS")
+    _csv_setting("CSRF_TRUSTED_ORIGINS", os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", ""))
 	+ [
 		f"https://{primary_vercel_host}",
 		f"https://{current_vercel_host}",
@@ -108,14 +112,20 @@ WSGI_APPLICATION = "urban_hunt.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-	"default": {
-		"ENGINE": "django.db.backends.sqlite3",
-		"NAME": Path(os.getenv("DJANGO_DB_NAME", "db.sqlite3")),
-	}
-}
-if not DATABASES["default"]["NAME"].is_absolute():
-	DATABASES["default"]["NAME"] = BASE_DIR / DATABASES["default"]["NAME"]
+database_url = os.getenv("DATABASE_URL")
+if database_url:
+    DATABASES = {"default": dj_database_url.parse(database_url, conn_max_age=600, conn_health_checks=True)}
+else:
+    if not DEBUG:
+        raise ImproperlyConfigured("DATABASE_URL must be set when DEBUG=False.")
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": Path(os.getenv("DJANGO_DB_NAME", "db.sqlite3")),
+        }
+    }
+    if not DATABASES["default"]["NAME"].is_absolute():
+        DATABASES["default"]["NAME"] = BASE_DIR / DATABASES["default"]["NAME"]
 
 
 # Password validation
@@ -140,7 +150,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = "Asia/Kolkata"
+LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Kolkata"
 
@@ -153,6 +163,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
