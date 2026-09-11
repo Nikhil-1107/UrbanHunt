@@ -26,7 +26,7 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY") or os.getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ImproperlyConfigured("SECRET_KEY must be set in the environment.")
 
@@ -40,7 +40,7 @@ def _csv_setting(name, default=""):
 primary_vercel_host = os.getenv("DJANGO_PRIMARY_HOST", "urbanhunt-nine.vercel.app").strip()
 current_vercel_host = os.getenv(
 	"DJANGO_VERCEL_DEPLOYMENT_HOST",
-	"urbanhunt-git-main-nikhil-1107s-projects.vercel.app",
+    os.getenv("VERCEL_URL", "").strip(),
 ).strip()
 
 # A leading dot matches the Vercel root domain and its subdomains in Django.
@@ -51,13 +51,12 @@ ALLOWED_HOSTS = list(dict.fromkeys(
 
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(
     _csv_setting("CSRF_TRUSTED_ORIGINS", os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", ""))
-	+ [
-		f"https://{primary_vercel_host}",
-		f"https://{current_vercel_host}",
-		"https://*.vercel.app",
-		"http://localhost:8000",
-		"http://127.0.0.1:8000",
-	]
+    + [
+        f"https://{primary_vercel_host}",
+        f"https://{current_vercel_host}" if current_vercel_host else "",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
 ))
 
 # Vercel terminates HTTPS before forwarding requests to Django.
